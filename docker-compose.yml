@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  gitleaks:
+    container_name: asset_management_gitleaks
+    build:
+      context: ./gitleaks
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    entrypoint: ['gitleaks', 'detect', '-c', '/app/gitleaks/.gitleaks.toml']
+
+  api:
+    container_name: api_asset_management
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - gitleaks
+
+networks:
+  asset_management:
+    driver: bridge

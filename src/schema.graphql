@@ -1,0 +1,93 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Asset {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Assignment {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type RequestReturn {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+type Query {
+  users: [User!]!
+  user(id: Int!): User!
+  assets: [Asset!]!
+  asset(id: Int!): Asset!
+  assignments: [Assignment!]!
+  assignment(id: Int!): Assignment!
+  requestReturns: [RequestReturn!]!
+  requestReturn(id: Int!): RequestReturn!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): User!
+  createAsset(createAssetInput: CreateAssetInput!): Asset!
+  updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
+  removeAsset(id: Int!): Asset!
+  createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
+  updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
+  removeAssignment(id: Int!): Assignment!
+  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
+  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
+  removeRequestReturn(id: Int!): RequestReturn!
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateAssetInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateAssetInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateAssignmentInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateAssignmentInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateRequestReturnInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateRequestReturnInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}

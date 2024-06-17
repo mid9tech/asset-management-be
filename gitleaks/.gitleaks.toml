@@ -1,0 +1,33 @@
+title = "gitleaks config"
+[[rules]]
+description = "Generic API Key"
+regex = '''(?i)apikey[=:]\s*['"]?[a-z0-9]{32,}['"]?'''
+tags = ["apikey"]
+
+[[rules]]
+description = "Generic Secret"
+regex = '''(?i)secret[=:]\s*['"]?[a-z0-9]{32,}['"]?'''
+tags = ["secret"]
+
+[[rules]]
+description = "AWS Access Key"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key", "access"]
+
+[[rules]]
+description = "AWS Secret Key"
+regex = '''(?i)aws(.{0,20})?['"][0-9a-zA-Z/+]{40}['"]'''
+tags = ["aws", "key", "secret"]
+
+[[rules]]
+description = "Email"
+regex = '''[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'''
+tags = ["email"]
+
+[[rules]]
+description = "JWT"
+regex = '''eyJ[A-Za-z0-9-_=]+\.eyJ[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'''
+tags = ["jwt", "token"]
+
+[allowlist]
+files = ["package.json", "package-lock.json", "yarn.lock"]
