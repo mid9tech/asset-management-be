@@ -6,13 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'access' }),
-    JwtModule.registerAsync({
-      useFactory: () => ({}),
-    }),
-    UsersModule,
-  ],
+  imports: [UsersModule],
   controllers: [AuthController],
   providers: [AuthService],
 })
