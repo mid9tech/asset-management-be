@@ -3,9 +3,14 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { UsersService } from '../users/users.service';
+import { JwtPayload } from 'src/shared/interfaces';
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+  ) {}
 
   create(createAuthDto: CreateAuthDto) {
     return 'This action adds a new auth';
@@ -36,6 +41,10 @@ export class AuthService {
       return result;
     }
     return null;
+  }
+
+  async validateUserByPayload(payload: JwtPayload): Promise<any> {
+    // return await this.usersService.findOneById(payload.userId);
   }
 
   async login(user: any) {
