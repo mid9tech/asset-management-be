@@ -5,7 +5,7 @@ import {
   generatePassword,
   generateStaffCode,
   generateUsername,
-} from 'src/shared/helpers';
+} from '../../shared/helpers';
 
 @Injectable()
 export class PrismaService

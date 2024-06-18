@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { PrismaService } from 'src/services/prisma/prisma.service';
-import { LOCATION, USER_STATUS } from 'src/shared/enums';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { LOCATION, USER_STATUS } from '../../shared/enums';
+import { MyBadRequestException } from '../../shared/exceptions';
 
 @Injectable()
 export class UsersService {

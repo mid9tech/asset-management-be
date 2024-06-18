@@ -6,7 +6,7 @@ import {
   GraphQLISODateTime,
 } from '@nestjs/graphql';
 import { IsEnum } from 'class-validator';
-import { GENDER, LOCATION, USER_TYPE } from 'src/shared/enums';
+import { GENDER, LOCATION, USER_TYPE } from '../../../shared/enums';
 
 @ObjectType()
 export class User {

@@ -1,13 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { PassportModule } from '@nestjs/passport';
-import { UsersModule } from '../users/users.module';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { USER_TYPE } from '../../shared/enums';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { AuthController } from './auth.controller';
+import { LoginInput } from './dto/login-input.dto';
 
-// Mock JwtService
+// Mock data
+const mockUser = { id: 1, username: 'test', password: '1234567' };
+const mockJwtPayload = { userId: 1, role: USER_TYPE.USER };
 const mockJwtService = {
-  sign: jest.fn().mockReturnValue('signedToken'),
+  sign: () => 'signedToken',
+};
+const mockUsersService = {
+  findOneById: (id: number) =>
+    id === mockUser.id ? Promise.resolve(mockUser) : Promise.resolve(null),
+  checkRefreshToken: (userId: number, refreshToken: string) =>
+    userId === mockUser.id && refreshToken === 'refreshToken'
+      ? Promise.resolve(true)
+      : Promise.resolve(false),
 };
 
 describe('AuthService', () => {
@@ -15,44 +27,33 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        JwtModule.registerAsync({
-          useFactory: () => ({
-            secret: 'test',
-            signOptions: { expiresIn: '60s' },
-          }),
-        }),
-      ],
-      providers: [AuthService],
+      controllers: [AuthController],
+      providers: [AuthService, JwtService, UsersService, PrismaService],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
   });
-
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // it('should validate user', async () => {
-  //   const username = 'test';
-  //   const password = 'password';
-  //   const hashedPassword = await bcrypt.hash(password, 10);
+  it('should validate user by payload', async () => {
+    const mockUserId = 1; // Make sure this user exists in your test setup
+    const result = await service.validateUserByPayload({
+      userId: mockUserId,
+      role: USER_TYPE.USER,
+    });
+    expect(result).toEqual(mockUser);
+  });
 
-  //   jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+  it('should validate user by JWT refresh token', async () => {
+    await expect(
+      service.validateUserByJwtRefreshToken(mockUser.id, 'refreshToken'),
+    ).resolves.toBeUndefined();
+  });
 
-  //   const result = await service.validateUser(username, password);
-  //   expect(result).toEqual({ username: 'test' });
-  // });
-
-  // it('should return null if invalid user', async () => {
-  //   jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
-  //   const result = await service.validateUser('test', 'wrongPassword');
-  //   expect(result).toBeNull();
-  // });
-
-  // it('should return access token on login', async () => {
-  //   const user = { username: 'test', userId: 1 };
-  //   const result = await service.login(user);
-  //   expect(result).toEqual({ access_token: 'signedToken' });
-  // });
+  it('should return access token on login', async () => {
+    const result = await service.login(mockUser);
+    expect(result).toEqual({ access_token: 'signedToken' });
+  });
 });

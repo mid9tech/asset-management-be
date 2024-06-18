@@ -14,46 +14,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { Request, Response } from 'express-serve-static-core';
 import { LoginInput } from './dto/login-input.dto';
-import { RoleGuard } from 'src/common/guard/role.guard';
-
-import { Roles } from 'src/common/decorator/roles.decorator';
-import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+import { RoleGuard } from '../../common/guard/role.guard';
+import { Roles } from '../../common/decorator/roles.decorator';
+import { CurrentUser, JwtAccessAuthGuard } from '../../common/guard/jwt.guard';
 import { USER_TYPE } from '@prisma/client';
-
 @Controller('api/auth')
 export class AuthController {
-  private readonly cookiePath = '/api/auth';
-  private readonly cookieName: string;
-  private readonly refreshTime: number;
-
-  constructor(private readonly authService: AuthService) {
-    this.cookieName = 'refresh-token';
-    this.refreshTime = 604800;
-  }
-
-  private refreshTokenFromReq(req: Request): string {
-    const token: string | undefined = req.signedCookies[this.cookieName];
-
-    if (token === undefined) {
-      throw new UnauthorizedException();
-    }
-
-    return token;
-  }
-
-  private saveRefreshCookie(res: Response, refreshToken: string): Response {
-    return res.cookie(this.cookieName, refreshToken, {
-      secure: false,
-      httpOnly: true,
-      signed: true,
-      path: '/',
-      expires: new Date(Date.now() + this.refreshTime * 1000),
-    });
-  }
+  constructor(private readonly authService: AuthService) {}
 
   @Get('/test')
   @Roles(USER_TYPE.USER)
