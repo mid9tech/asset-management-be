@@ -43,6 +43,32 @@ export class UsersService {
     return `This action updates a #${id} user: ${updateUserInput}`;
   }
 
+  updateRefreshToken(id: number, refreshToken: string) {
+    return this.prismaService.user.update({
+      where: { id },
+      data: { refreshToken },
+    });
+  }
+
+  async checkRefreshToken(id: number, refreshToken: string) {
+    const data = await this.prismaService.user.findFirst({
+      where: { id, refreshToken },
+    });
+
+    return data ? true : false;
+  }
+
+  async findOneByUsername(username: string) {
+    return await this.prismaService.user.findFirst({ where: { username } });
+  }
+
+  updatePassword(id: number, password: string) {
+    return this.prismaService.user.update({
+      where: { id },
+      data: { password },
+    });
+  }
+
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
