@@ -1,15 +1,20 @@
 export enum GENDER {
-  MALE,
-  FEMALE,
-  OTHER,
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
 }
 export enum USER_TYPE {
-  ADMIN,
-  USER,
+  ADMIN = 'ADMIN',
+  USER = 'USER',
 }
 
 export enum LOCATION {
-  HCM,
-  HN,
-  DN,
+  HCM = 'HCM',
+  HN = 'HN',
+  DN = 'DN',
 }
+
+export const USER_STATUS = {
+  ACTIVE: true,
+  INACTIVE: false,
+};
