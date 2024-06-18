@@ -53,12 +53,12 @@ enum ASSET_STATE {
 model User {
   id           Int             @id @default(autoincrement())
   firstName    String
-  staffCode    String          @unique
+  staffCode    String?         @unique
   lastName     String
-  username     String          @unique
-  password     String
+  username     String?         @unique
+  password     String?
   gender       GENDER          @default(OTHER)
-  salt         String
+  salt         String?
   refreshToken String?
   joinedDate   DateTime
   type         USER_TYPE       @default(USER)
