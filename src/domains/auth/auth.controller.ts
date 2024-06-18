@@ -19,15 +19,16 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { Request, Response } from 'express-serve-static-core';
 import { LoginInput } from './dto/login-input.dto';
 import { RoleGuard } from 'src/common/guard/role.guard';
-import { JwtAuthGuard } from 'src/common/guard/jwt.guard';
-import { Roles } from 'src/common/decorator/roles.decorator';
 
-@Controller('auth')
+import { Roles } from 'src/common/decorator/roles.decorator';
+import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+import { USER_TYPE } from '@prisma/client';
+
+@Controller('api/auth')
 export class AuthController {
   private readonly cookiePath = '/api/auth';
   private readonly cookieName: string;
   private readonly refreshTime: number;
-  private readonly testing: boolean;
 
   constructor(private readonly authService: AuthService) {
     this.cookieName = 'refresh-token';
@@ -54,44 +55,36 @@ export class AuthController {
     });
   }
 
+  @Get('/test')
+  @Roles(USER_TYPE.USER)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  public async findAll(): Promise<any> {
+    return 'Hello World!';
+  }
+
   @Post('/login')
   public async login(
     @Res() res: Response,
     @Body() loginInput: LoginInput,
-  ): Promise<void> {
-    const result = await this.authService.login(singInDto, origin);
-    this.saveRefreshCookie(res, result.refreshToken)
-      .status(HttpStatus.OK)
-      .json(AuthResponseMapper.map(result));
+  ): Promise<any> {
+    const result = await this.authService.login(loginInput);
+    return res.status(HttpStatus.OK).json(result);
   }
-  @UseGuards(JwtAuthGuard)
-  @Post('/refresh-access')
-  public async refreshAccess(
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<void> {
-    const token = this.refreshTokenFromReq(req);
 
-    const result = await this.authService.refreshTokenAccess(
-      token,
-      req.headers.origin,
-    );
-    this.saveRefreshCookie(res, result.refreshToken)
-      .status(HttpStatus.OK)
-      .json(AuthResponseMapper.map(result));
+  @Post('/refresh-access')
+  @UseGuards(JwtAccessAuthGuard)
+  public async refreshAccess(@CurrentUser() user: any) {
+    const { id, token } = user;
+    console.log('user', user);
+    const result = await this.authService.refreshAccessToken(id, token);
+    return result;
   }
 
   @Post('/logout')
-  @HttpCode(HttpStatus.OK)
-  public async logout(
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<void> {
-    const token = this.refreshTokenFromReq(req);
-    const message = await this.authService.logout(token);
-    res.clearCookie(this.cookieName, { path: '/' });
-    res.clearCookie('access-token', { path: '/' });
-    res.status(HttpStatus.OK).json(message);
+  @UseGuards(JwtAccessAuthGuard)
+  public async logout(@CurrentUser() user: any): Promise<void> {
+    const { id, token } = user;
+    const result = await this.authService.logout(id, token);
   }
 
   // @Patch('/update-password')

@@ -58,6 +58,10 @@ export class UsersService {
     return data ? true : false;
   }
 
+  async findOneById(id: number) {
+    return await this.prismaService.user.findFirst({ where: { id } });
+  }
+
   async findOneByUsername(username: string) {
     return await this.prismaService.user.findFirst({ where: { username } });
   }

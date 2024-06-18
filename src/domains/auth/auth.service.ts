@@ -1,32 +1,31 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
-import { JwtPayload } from 'src/shared/interfaces';
+import { IJwtPayload } from 'src/shared/interfaces';
 import { LoginInput } from './dto/login-input.dto';
-import { AuthResponse } from './entities/auth-response.entity';
 import { IsCorrectPW } from 'src/shared/helpers';
 import { USER_TYPE } from '@prisma/client';
 import { JWT_CONST } from 'src/shared/constants';
+import { IAuthResponse } from './dto/auth-response.dto';
+import { first, last } from 'rxjs';
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) {}
-  async validateUserByPayload(payload: JwtPayload): Promise<any> {
-    // return await this.usersService.findOneById(payload.userId);
+  async validateUserByPayload(payload: IJwtPayload): Promise<any> {
+    return await this.usersService.findOneById(payload.userId);
   }
 
   async validateUserByJwtRefreshToken(
-    userId: string,
+    userId: number,
     refreshToken: string,
   ): Promise<any> {
-    const token = await this.usersService.findRefreshToken(
-      refreshToken,
+    const token = await this.usersService.checkRefreshToken(
       userId,
+      refreshToken,
     );
 
     if (!token) {
@@ -38,7 +37,7 @@ export class AuthService {
   }
 
   async generateJwtToken(
-    payload: JwtPayload,
+    payload: IJwtPayload,
     expiresIn: number,
     secret: string,
   ): Promise<string> {
@@ -69,7 +68,7 @@ export class AuthService {
   //   }
   // }
 
-  async login(loginInput: LoginInput): Promise<AuthResponse> {
+  async login(loginInput: LoginInput): Promise<IAuthResponse> {
     const user = await this.usersService.findOneByUsername(loginInput.username);
 
     if (!user) {
@@ -78,16 +77,24 @@ export class AuthService {
     if (!(await IsCorrectPW(user.password, loginInput.password))) {
       throw new UnauthorizedException('Username or password is incorrect!');
     }
-
-    const payload: JwtPayload = { userId: user.id, role: USER_TYPE.USER };
-
+    const payload: IJwtPayload = { userId: user.id, role: user.type };
     let refreshToken = null;
 
-    await this.usersService.createNewRefreshToken(
-      refreshToken,
-      user.id,
-      JWT_CONST.REFRESH_EXPIRED(),
+    refreshToken = await this.generateJwtToken(
+      payload,
+      JWT_CONST.REFRESH_EXPIRED_GENERATION,
+      JWT_CONST.REFRESH_SECRET,
     );
+
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
+
+    const mappedUser = {
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.type,
+    };
 
     return {
       accessToken: await this.generateJwtToken(
@@ -96,19 +103,20 @@ export class AuthService {
         JWT_CONST.ACCESS_SECRET,
       ),
       refreshToken,
-      expired_accessToken: JWT_CONST.ACCESS_EXPIRED(),
-      expired_refreshToken: JWT_CONST.REFRESH_EXPIRED(),
+      expiredAccessToken: JWT_CONST.ACCESS_EXPIRED(),
+      expiredRefreshToken: JWT_CONST.REFRESH_EXPIRED(),
+      user: mappedUser,
     };
   }
 
-  async logout(userId: string, refreshToken: string) {
-    return (await this.usersService.deleteRefreshToken(userId, refreshToken))
+  async logout(userId: number, refreshToken: string) {
+    return (await this.usersService.updateRefreshToken(userId, null))
       ? true
       : false;
   }
 
   async refreshAccessToken(userId: number, role: string) {
-    const payload: JwtPayload = { userId, role };
+    const payload: IJwtPayload = { userId, role };
     const accessToken = await this.generateJwtToken(
       payload,
       JWT_CONST.ACCESS_EXPIRED_GENERATION,

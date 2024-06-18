@@ -6,6 +6,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { IJwtPayload } from 'src/shared/interfaces/index';
+import { JWT_CONST } from 'src/shared/constants';
 
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
@@ -16,19 +17,16 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('SECRET_ACCESS_TOKEN_KEY'),
+      secretOrKey: JWT_CONST.ACCESS_SECRET,
     });
   }
 
   async validate(payload: IJwtPayload) {
     const user = await this.authService.validateUserByPayload(payload);
-
     if (!user) {
       throw new UnauthorizedException('Invalid access token');
     }
-
     user.role = payload.role;
-
     return user;
   }
 }
@@ -42,7 +40,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('SECRET_ACCESS_REFRESH_KEY'),
+      secretOrKey: JWT_CONST.REFRESH_SECRET,
     });
   }
 

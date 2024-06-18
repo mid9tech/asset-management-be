@@ -15,10 +15,6 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    PassportModule,
-    JwtModule.registerAsync({
-      useFactory: () => ({}),
-    }),
     ConfigModule.forRoot({
       envFilePath: [`.env`],
       isGlobal: true,

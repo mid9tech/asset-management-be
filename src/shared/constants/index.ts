@@ -26,7 +26,7 @@ export const GRAPHQL_CODE_ERROR = {
 
 export const JWT_CONST = {
   ACCESS_SECRET: process.env.SECRET_ACCESS_TOKEN_KEY,
-  REFRESH_SECRET: process.env.SECRET_ACCESS_REFRESH_KEY,
+  REFRESH_SECRET: process.env.SECRET_REFRESH_TOKEN_KEY,
   ACCESS_EXPIRED: () => {
     return 60 * 60 * 1000 + new Date().getTime();
   }, // mini seconds one hour from now (integer)
