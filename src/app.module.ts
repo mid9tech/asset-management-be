@@ -9,6 +9,7 @@ import { AssignmentsModule } from './domains/assignments/assignments.module';
 import { RequestReturnsModule } from './domains/request-returns/request-returns.module';
 import { FormatError } from './shared/helpers';
 import { PrismaModule } from './services/prisma/prisma.module';
+import { AuthModule } from './domains/auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PrismaModule } from './services/prisma/prisma.module';
     AssetsModule,
     AssignmentsModule,
     RequestReturnsModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
