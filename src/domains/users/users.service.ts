@@ -1,18 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
+import { PrismaService } from 'src/services/prisma/prisma.service';
+import { LOCATION, USER_STATUS } from 'src/shared/enums';
+import { MyBadRequestException } from 'src/shared/exceptions';
 
 @Injectable()
 export class UsersService {
-  constructor() {}
-  create(createUserInput: CreateUserInput) {
-    return createUserInput;
+  constructor(private readonly prismaService: PrismaService) {}
+  async create(createUserInput: CreateUserInput) {
+    try {
+      const { dateOfBirth, joinedDate } = createUserInput;
+
+      if (isNaN(Date.parse(dateOfBirth))) {
+        throw new MyBadRequestException('DOB is invalid');
+      }
+
+      if (isNaN(Date.parse(joinedDate))) {
+        throw new MyBadRequestException('JoinedDate is invalid');
+      }
+
+      await this.prismaService.user.create({
+        data: {
+          ...createUserInput,
+          state: USER_STATUS.ACTIVE,
+          location: LOCATION.HCM,
+          dateOfBirth: new Date(dateOfBirth).toISOString(),
+          joinedDate: new Date(joinedDate).toISOString(),
+        },
+      });
+    } catch (error) {}
   }
 
   findAll() {
     return `This action returns all users`;
   }
-
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
