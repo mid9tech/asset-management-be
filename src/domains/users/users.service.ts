@@ -4,6 +4,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 
 @Injectable()
 export class UsersService {
+  constructor() {}
   create(createUserInput: CreateUserInput) {
     return createUserInput;
   }
