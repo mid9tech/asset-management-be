@@ -13,20 +13,19 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   async onModuleInit() {
-    const prisma = new PrismaClient();
     await this.$connect();
 
-    prisma.$use(async (params, next) => {
+    this.$use(async (params, next) => {
       if (params.model === 'User' && params.action === 'create') {
         // Auto-generate staff code
 
         if (!params.args.data.staffCode) {
-          params.args.data.staffCode = await generateStaffCode(prisma);
+          params.args.data.staffCode = await generateStaffCode(this);
         }
 
         // Auto-generate username
         if (!params.args.data.username) {
-          params.args.data.username = await generateUsername(params, prisma);
+          params.args.data.username = await generateUsername(params, this);
         }
 
         // Auto-generate salt

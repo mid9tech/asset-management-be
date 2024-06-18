@@ -20,7 +20,7 @@ export class UsersService {
         throw new MyBadRequestException('JoinedDate is invalid');
       }
 
-      await this.prismaService.user.create({
+      const result = await this.prismaService.user.create({
         data: {
           ...createUserInput,
           state: USER_STATUS.ACTIVE,
@@ -29,7 +29,11 @@ export class UsersService {
           joinedDate: new Date(joinedDate).toISOString(),
         },
       });
-    } catch (error) {}
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   findAll() {

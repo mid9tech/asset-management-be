@@ -4,7 +4,9 @@ import { GENDER, USER_TYPE } from 'src/shared/enums';
 
 @InputType()
 export class CreateUserInput {
-  @Field(() => String)
+  @Field(() => String, {
+    nullable: false,
+  })
   firstName: string;
 
   @Field(() => String)
