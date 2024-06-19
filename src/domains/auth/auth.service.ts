@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { IJwtPayload } from '../../shared/interfaces';
@@ -47,34 +51,14 @@ export class AuthService {
     return this.jwtService.sign(payload, options);
   }
 
-  // async register(registerInput: RegisterInput): Promise<boolean> {
-  //   try {
-  //     const salt = await GenSalt();
-  //     registerInput.password = await HashPW(registerInput.password, salt);
-  //     const user = await this.userRepository.create(registerInput, salt);
-  //     await this.otpService.generateSecret(user.id);
-
-  //     this.mailerService
-  //       .sendMail(NewThankyouForRegisterEmailOption(user.email, user.firstName))
-  //       .catch((err) => console.log(err));
-
-  //     return true;
-  //   } catch (error) {
-  //     if (error.code === 'P2002' && error.meta.target.includes('email')) {
-  //       throw new MyBadRequestException('Email already exists');
-  //     }
-  //     throw error;
-  //   }
-  // }
-
   async login(loginInput: LoginInput): Promise<IAuthResponse> {
     const user = await this.usersService.findOneByUsername(loginInput.username);
 
     if (!user) {
-      throw new UnauthorizedException('Username or password is incorrect!');
+      throw new BadRequestException('Username or password is incorrect!');
     }
     if (!(await IsCorrectPW(user.password, loginInput.password))) {
-      throw new UnauthorizedException('Username or password is incorrect!');
+      throw new BadRequestException('Username or password is incorrect!');
     }
     const payload: IJwtPayload = { userId: user.id, role: user.type };
     let refreshToken = null;
@@ -134,5 +118,30 @@ export class AuthService {
       secret:
         type === 'access' ? JWT_CONST.ACCESS_SECRET : JWT_CONST.REFRESH_SECRET,
     });
+  }
+
+  async changePasswordFirstTime(user: any, newPassword: string) {
+    const { id } = user;
+    const { state: isActived } = await this.usersService.findOneById(id);
+    if (isActived) {
+      throw new BadRequestException('This user already changed password!');
+    }
+    const isOldPassword = await IsCorrectPW(user.password, newPassword);
+    if (isOldPassword) {
+      throw new BadRequestException('New password must be different!');
+    }
+
+    await this.usersService.updatePassword(id, newPassword);
+    const result = await this.usersService.updateState(id, true);
+
+    const mappedUser = {
+      id: result.id,
+      username: result.username,
+      firstName: result.firstName,
+      lastName: result.lastName,
+      role: result.type,
+      isActived: result.state,
+    };
+    return mappedUser;
   }
 }
