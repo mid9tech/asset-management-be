@@ -1,5 +1,11 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import {
+  GenSalt,
+  generatePassword,
+  generateStaffCode,
+  generateUsername,
+} from '../../shared/helpers';
 
 @Injectable()
 export class PrismaService
@@ -7,35 +13,29 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   async onModuleInit() {
-    const prisma = new PrismaClient();
     await this.$connect();
 
-    prisma.$use(async (params, next) => {
+    this.$use(async (params, next) => {
       if (params.model === 'User' && params.action === 'create') {
         // Auto-generate staff code
+
         if (!params.args.data.staffCode) {
-          const lastUser = await prisma.user.findFirst({
-            orderBy: { id: 'desc' },
-          });
-          const lastId = lastUser ? parseInt(lastUser.staffCode.slice(2)) : 0;
-          const newId = lastId + 1;
-          const newStaffCode = `SD${newId.toString().padStart(4, '0')}`;
-          params.args.data.staffCode = newStaffCode;
+          params.args.data.staffCode = await generateStaffCode(this);
         }
 
         // Auto-generate username
         if (!params.args.data.username) {
-          const { firstName, lastName } = params.args.data;
-          const usernameBase =
-            firstName.toLowerCase().replace(/\s+/g, '') +
-            lastName.toLowerCase().replace(/\s+/g, '');
-          let username = usernameBase;
-          let counter = 1;
-          while (await prisma.user.findFirst({ where: { username } })) {
-            username = usernameBase + counter;
-            counter++;
-          }
-          params.args.data.username = username;
+          params.args.data.username = await generateUsername(params, this);
+        }
+
+        // Auto-generate salt
+        if (!params.args.data.salt) {
+          params.args.data.salt = await GenSalt();
+        }
+
+        // Auto-generate password based on username and date of birth
+        if (!params.args.data.password) {
+          params.args.data.password = await generatePassword(params);
         }
       }
       return next(params);

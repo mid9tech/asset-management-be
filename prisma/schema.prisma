@@ -53,17 +53,19 @@ enum ASSET_STATE {
 model User {
   id           Int             @id @default(autoincrement())
   firstName    String
-  staffCode    String          @unique
+  staffCode    String?         @unique
   lastName     String
-  username     String          @unique
-  password     String
+  username     String?         @unique
+  password     String?
   gender       GENDER          @default(OTHER)
-  salt         String
+  salt         String?
   refreshToken String?
   joinedDate   DateTime
   type         USER_TYPE       @default(USER)
   dateOfBirth  DateTime
   state        Boolean
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   location     LOCATION        @default(HCM)
   assignments  Assignment[]    @relation("AssignedTo")
   requests     RequestReturn[] @relation("RequestedBy")
@@ -84,6 +86,8 @@ model RequestReturn {
   state         REQUEST_RETURN_STATE @default(WAITING_FOR_RETURNING)
   assignment    Assignment           @relation(fields: [assignmentId], references: [id])
   assignmentId  Int
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 }
 
 model Assignment {
@@ -100,6 +104,8 @@ model Assignment {
   requestReturns RequestReturn[]
   Asset          Asset?           @relation(fields: [assetId], references: [id])
   assetId        Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 }
 
 model Asset {
@@ -113,11 +119,15 @@ model Asset {
   location      String
   specification String
   assignments   Assignment[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Category {
-  id           Int     @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   categoryCode String
   categoryName String
   assets       Asset[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
