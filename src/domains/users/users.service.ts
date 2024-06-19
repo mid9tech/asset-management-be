@@ -9,7 +9,7 @@ import { MyBadRequestException, MyEntityNotFoundException } from '../../shared/e
 import { FindUsersInput } from './dto/find-users.input';
 import { Prisma, User } from '@prisma/client';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ENTITY_NAME } from 'src/shared/constants';
+import { ENTITY_NAME } from '../../shared/constants';
 
 @Injectable()
 export class UsersService {
