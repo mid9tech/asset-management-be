@@ -25,7 +25,8 @@ import {
   JwtRefreshAuthGuard,
 } from '../../common/guard/jwt.guard';
 import { USER_TYPE } from '@prisma/client';
-import { IChangePasswordFirstTimeDto } from './dto/change-password-first-time.dto';
+import { ChangePasswordFirstTimeDto } from './dto/change-password-first-time.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -80,16 +81,35 @@ export class AuthController {
     res.status(HttpStatus.OK).json('Logout success!');
   }
 
+  //change password first time
   @Post('/change-password')
   @UseGuards(JwtAccessAuthGuard)
   public async changePassword(
     @Res() res: Response,
     @CurrentUser() user: any,
-    @Body() changePasswordFirstTime: IChangePasswordFirstTimeDto,
+    @Body() changePasswordFirstTime: ChangePasswordFirstTimeDto,
   ) {
     const { newPassword } = changePasswordFirstTime;
     const result = await this.authService.changePasswordFirstTime(
       user,
+      newPassword,
+    );
+
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  //change password
+  @Put('/change-password')
+  @UseGuards(JwtAccessAuthGuard)
+  public async changePasswordNormal(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+    @Body() changePassword: ChangePasswordDto,
+  ) {
+    const { oldPassword, newPassword } = changePassword;
+    const result = await this.authService.changePassword(
+      user,
+      oldPassword,
       newPassword,
     );
 
