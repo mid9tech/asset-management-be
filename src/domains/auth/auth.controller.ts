@@ -12,6 +12,7 @@ import {
   Req,
   HttpCode,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -24,6 +25,7 @@ import {
   JwtRefreshAuthGuard,
 } from '../../common/guard/jwt.guard';
 import { USER_TYPE } from '@prisma/client';
+import { IChangePasswordFirstTimeDto } from './dto/change-password-first-time.dto';
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -78,19 +80,19 @@ export class AuthController {
     res.status(HttpStatus.OK).json('Logout success!');
   }
 
-  // @Patch('/update-password')
-  // public async updatePassword(
-  //   @Body() changePasswordDto: ChangePasswordDto,
-  //   @Res() res: Response,
-  // ): Promise<void> {
-  //   const { id } = changePasswordDto;
-  //   const result = await this.authService.updatePassword(
-  //     id,
-  //     changePasswordDto,
-  //     origin,
-  //   );
-  //   this.saveRefreshCookie(res, result.refreshToken)
-  //     .status(HttpStatus.OK)
-  //     .json(AuthResponseMapper.map(result));
-  // }
+  @Post('/change-password')
+  @UseGuards(JwtAccessAuthGuard)
+  public async changePassword(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+    @Body() changePasswordFirstTime: IChangePasswordFirstTimeDto,
+  ) {
+    const { newPassword } = changePasswordFirstTime;
+    const result = await this.authService.changePasswordFirstTime(
+      user,
+      newPassword,
+    );
+
+    res.status(HttpStatus.OK).json(result);
+  }
 }

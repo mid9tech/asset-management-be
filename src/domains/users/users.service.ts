@@ -4,6 +4,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { LOCATION, USER_STATUS } from '../../shared/enums';
 import { MyBadRequestException } from '../../shared/exceptions';
+import { HashPW } from 'src/shared/helpers';
 
 @Injectable()
 export class UsersService {
@@ -66,14 +67,30 @@ export class UsersService {
     return await this.prismaService.user.findFirst({ where: { username } });
   }
 
-  updatePassword(id: number, password: string) {
+  async updatePassword(id: number, password: string) {
+    const { salt } = await this.getSalt(id);
+    const newPassword = await HashPW(password, salt);
     return this.prismaService.user.update({
       where: { id },
-      data: { password },
+      data: { password: newPassword },
     });
   }
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async getSalt(id: number) {
+    return this.prismaService.user.findFirst({
+      where: { id },
+      select: { salt: true },
+    });
+  }
+
+  async updateState(id: number, state: boolean) {
+    return this.prismaService.user.update({
+      where: { id },
+      data: { state },
+    });
   }
 }
