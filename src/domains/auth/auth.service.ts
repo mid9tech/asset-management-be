@@ -30,7 +30,9 @@ export class AuthService {
         'Wrong refresh token, please login again.',
       );
     }
-    return;
+
+    const user = await this.usersService.findOneById(userId);
+    return user;
   }
 
   async generateJwtToken(

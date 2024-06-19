@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from 'src/domains/auth/auth.service';
 
 @Injectable()
 export class JwtAccessAuthGuard extends AuthGuard('access') {
@@ -16,6 +17,9 @@ export class JwtAccessAuthGuard extends AuthGuard('access') {
 }
 
 export class JwtRefreshAuthGuard extends AuthGuard('refresh') {
+  constructor(private readonly authService: AuthService) {
+    super();
+  }
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
 
