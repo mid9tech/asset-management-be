@@ -9,7 +9,7 @@ import { IJwtPayload } from '../../shared/interfaces';
 import { LoginInput } from './dto/login-input.dto';
 import { IsCorrectPW } from '../../shared/helpers';
 import { JWT_CONST } from '../../shared/constants';
-import { IAuthResponse } from './dto/auth-response.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -51,7 +51,7 @@ export class AuthService {
     return this.jwtService.sign(payload, options);
   }
 
-  async login(loginInput: LoginInput): Promise<IAuthResponse> {
+  async login(loginInput: LoginInput): Promise<AuthResponseDto> {
     const user = await this.usersService.findOneByUsername(loginInput.username);
 
     if (!user) {
@@ -120,13 +120,40 @@ export class AuthService {
     });
   }
 
+  async changePassword(user: any, oldPassword: string, newPassword: string) {
+    const { id } = user;
+    const { password } = await this.usersService.findOneById(id);
+    const isCorrect = await IsCorrectPW(password, oldPassword);
+    if (!isCorrect) {
+      throw new BadRequestException('Old password is incorrect!');
+    }
+
+    if (newPassword === oldPassword) {
+      throw new BadRequestException('New password must be different!');
+    }
+
+    const result = await this.usersService.updatePassword(id, newPassword);
+    const mappedUser = {
+      id: result.id,
+      username: result.username,
+      firstName: result.firstName,
+      lastName: result.lastName,
+      role: result.type,
+      isActived: result.state,
+    };
+    return mappedUser;
+  }
   async changePasswordFirstTime(user: any, newPassword: string) {
     const { id } = user;
     const { state: isActived } = await this.usersService.findOneById(id);
     if (isActived) {
-      throw new BadRequestException('This user already changed password!');
+      throw new BadRequestException(
+        'This user already changed password first time!',
+      );
     }
-    const isOldPassword = await IsCorrectPW(user.password, newPassword);
+    const { password } = await this.usersService.findOneById(id);
+
+    const isOldPassword = await IsCorrectPW(password, newPassword);
     if (isOldPassword) {
       throw new BadRequestException('New password must be different!');
     }
