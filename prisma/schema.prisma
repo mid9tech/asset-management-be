@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum USER_TYPE {
+  ADMIN
+  USER
+}
+
+enum GENDER {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum LOCATION {
+  HCM
+  HN
+  DN
+}
+
+enum REQUEST_RETURN_STATE {
+  CANCELED
+  COMPLETED
+  WAITING_FOR_RETURNING
+}
+
+enum ASSIGNMENT_STATE {
+  WAITING_FOR_ACCEPTANCE
+  ACCEPTED
+  DECLINED
+}
+
+enum ASSET_STATE {
+  AVAILABLE
+  NOT_AVAILABLE
+  WAITING_FOR_RECYCLING
+  RECYCLED
+  ASSIGNED
+}
+
+model User {
+  id           Int             @id @default(autoincrement())
+  firstName    String
+  staffCode    String?         @unique
+  lastName     String
+  username     String?         @unique
+  password     String?
+  gender       GENDER          @default(OTHER)
+  salt         String?
+  refreshToken String?
+  joinedDate   DateTime
+  type         USER_TYPE       @default(USER)
+  dateOfBirth  DateTime
+  state        Boolean
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  location     LOCATION        @default(HCM)
+  assignments  Assignment[]    @relation("AssignedTo")
+  requests     RequestReturn[] @relation("RequestedBy")
+  accepted     RequestReturn[] @relation("AcceptedBy")
+  Assignment   Assignment[]    @relation("AssignedBy")
+}
+
+model RequestReturn {
+  id            Int                  @id @default(autoincrement())
+  assetCode     String
+  assetName     String
+  requestedBy   User                 @relation("RequestedBy", fields: [requestedById], references: [id])
+  requestedById Int
+  assignedDate  DateTime
+  acceptedBy    User?                @relation("AcceptedBy", fields: [acceptedById], references: [id])
+  acceptedById  Int?
+  returnedDate  DateTime?
+  state         REQUEST_RETURN_STATE @default(WAITING_FOR_RETURNING)
+  assignment    Assignment           @relation(fields: [assignmentId], references: [id])
+  assignmentId  Int
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model Assignment {
+  id             Int              @id @default(autoincrement())
+  assetCode      String
+  assetName      String
+  assignedTo     User             @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId   Int
+  assignedBy     User             @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedById   Int
+  assignedDate   DateTime
+  state          ASSIGNMENT_STATE @default(WAITING_FOR_ACCEPTANCE)
+  note           String?
+  requestReturns RequestReturn[]
+  Asset          Asset?           @relation(fields: [assetId], references: [id])
+  assetId        Int?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Asset {
+  id            Int          @id @default(autoincrement())
+  assetCode     String       @unique
+  assetName     String
+  category      Category     @relation(fields: [categoryId], references: [id])
+  categoryId    Int
+  installedDate DateTime
+  state         ASSET_STATE  @default(AVAILABLE)
+  location      String
+  specification String
+  assignments   Assignment[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  categoryCode String
+  categoryName String
+  assets       Asset[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

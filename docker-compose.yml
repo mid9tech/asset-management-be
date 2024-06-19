@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  gitleaks:
+    container_name: asset_management_gitleaks
+    build:
+      context: ./gitleaks
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    entrypoint: ['gitleaks', 'detect', '-c', '/app/gitleaks/.gitleaks.toml']
