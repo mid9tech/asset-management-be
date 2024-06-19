@@ -47,8 +47,35 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserInput: UpdateUserInput) {
-    return `This action updates a #${id} user: ${updateUserInput}`;
+  async update(id: number, updateUserInput: UpdateUserInput) {
+    try {
+      const { dateOfBirth, joinedDate } = updateUserInput;
+
+      if (dateOfBirth && isNaN(Date.parse(dateOfBirth))) {
+        throw new MyBadRequestException('DOB is invalid');
+      }
+
+      if (joinedDate && isNaN(Date.parse(joinedDate))) {
+        throw new MyBadRequestException('JoinedDate is invalid');
+      }
+
+      const result = await this.prismaService.user.update({
+        where: { id },
+        data: {
+          ...updateUserInput,
+          dateOfBirth: dateOfBirth
+            ? new Date(dateOfBirth).toISOString()
+            : undefined,
+          joinedDate: joinedDate
+            ? new Date(joinedDate).toISOString()
+            : undefined,
+        },
+      });
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   updateRefreshToken(id: number, refreshToken: string) {
