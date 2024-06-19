@@ -3,9 +3,26 @@
 # ------------------------------------------------------
 
 type User {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  firstName: String!
+  staffCode: String!
+  lastName: String!
+  username: String!
+  password: String!
+  gender: String!
+  salt: String!
+  refreshToken: String
+  joinedDate: DateTime!
+  type: String!
+  dateOfBirth: DateTime!
+  state: Boolean!
+  location: String!
 }
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Asset {
   """Example field (placeholder)"""
@@ -35,7 +52,7 @@ type Query {
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
-  updateUser(updateUserInput: UpdateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!, id: String!): User!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
@@ -49,13 +66,21 @@ type Mutation {
 }
 
 input CreateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  firstName: String!
+  lastName: String!
+  gender: String!
+  joinedDate: String!
+  dateOfBirth: String!
+  type: String!
 }
 
 input UpdateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  firstName: String
+  lastName: String
+  gender: String
+  joinedDate: String
+  dateOfBirth: String
+  type: String
   id: Int!
 }
 
