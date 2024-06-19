@@ -17,12 +17,8 @@ export class JwtAccessAuthGuard extends AuthGuard('access') {
 }
 
 export class JwtRefreshAuthGuard extends AuthGuard('refresh') {
-  constructor(private readonly authService: AuthService) {
-    super();
-  }
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-
     return ctx.getContext().req;
   }
 }
@@ -31,11 +27,7 @@ export const CurrentUser = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const ctx = GqlExecutionContext.create(context);
 
-    const token = ctx.getContext().req.headers['authorization'].split(' ')[1];
-
     const user = ctx.getContext().req.user;
-
-    user.token = token;
 
     return user;
   },

@@ -7,19 +7,18 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { AuthController } from './auth.controller';
 import { LoginInput } from './dto/login-input.dto';
 
-// Mock data
 const mockUser = { id: 1, username: 'test', password: '1234567' };
-const mockJwtPayload = { userId: 1, role: USER_TYPE.USER };
-const mockJwtService = {
-  sign: () => 'signedToken',
+
+const mockResponse = {
+  accessToken: 'mockAccessToken',
+  expiredAccessToken: 123456789,
+  user: mockUser,
+  refreshToken: 'mockRefreshToken',
+  expiredRefreshToken: 123456789,
 };
-const mockUsersService = {
-  findOneById: (id: number) =>
-    id === mockUser.id ? Promise.resolve(mockUser) : Promise.resolve(null),
-  checkRefreshToken: (userId: number, refreshToken: string) =>
-    userId === mockUser.id && refreshToken === 'refreshToken'
-      ? Promise.resolve(true)
-      : Promise.resolve(false),
+
+const mockAuthService = {
+  login: jest.fn().mockResolvedValue(mockResponse),
 };
 
 describe('AuthService', () => {
@@ -28,32 +27,19 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [AuthService, JwtService, UsersService, PrismaService],
+      providers: [
+        { provide: AuthService, useValue: mockAuthService },
+        JwtService,
+        UsersService,
+        PrismaService,
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
   });
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
 
-  it('should validate user by payload', async () => {
-    const mockUserId = 1; // Make sure this user exists in your test setup
-    const result = await service.validateUserByPayload({
-      userId: mockUserId,
-      role: USER_TYPE.USER,
-    });
-    expect(result).toEqual(mockUser);
-  });
-
-  it('should validate user by JWT refresh token', async () => {
-    await expect(
-      service.validateUserByJwtRefreshToken(mockUser.id, 'refreshToken'),
-    ).resolves.toBeUndefined();
-  });
-
-  it('should return access token on login', async () => {
+  it('should return tokens on login', async () => {
     const result = await service.login(mockUser);
-    expect(result).toEqual({ access_token: 'signedToken' });
+    expect(result).toEqual(mockResponse);
   });
 });

@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { IJwtPayload } from 'src/shared/interfaces/index';
 import { JWT_CONST } from 'src/shared/constants';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
@@ -30,12 +31,18 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly authService: AuthService,
-  ) {
+  constructor(private readonly authService: AuthService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => {
+          // extract refresh token from cookie
+          const refreshToken = req.headers.cookie
+            ?.split(';')
+            .find((c) => c.trim().startsWith('refreshToken'))
+            ?.split('=')[1];
+          return refreshToken;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: JWT_CONST.REFRESH_SECRET,
       passReqToCallback: true,
@@ -43,11 +50,15 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   }
 
   async validate(req: Request, payload: IJwtPayload) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-
+    // extract refresh token from cookie
+    const refreshToken = req.headers.cookie
+      ?.split(';')
+      .find((c) => c.trim().startsWith('refreshToken'))
+      ?.split('=')[1];
+    //check refresh token is current refresh token of user
     const user = await this.authService.validateUserByJwtRefreshToken(
       payload.userId,
-      token,
+      refreshToken,
     );
 
     if (!user) {

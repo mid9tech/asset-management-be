@@ -14,7 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express-serve-static-core';
+import { Request, Response } from 'express';
 import { LoginInput } from './dto/login-input.dto';
 import { RoleGuard } from '../../common/guard/role.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
@@ -41,6 +41,15 @@ export class AuthController {
     @Body() loginInput: LoginInput,
   ): Promise<any> {
     const result = await this.authService.login(loginInput);
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+    });
+
+    //remove refreshtoken from result
+    delete result.refreshToken;
+    delete result.expiredRefreshToken;
+
     return res.status(HttpStatus.OK).json(result);
   }
 
@@ -48,15 +57,25 @@ export class AuthController {
   @UseGuards(JwtRefreshAuthGuard)
   public async refreshAccess(@CurrentUser() user: any) {
     const { id, role } = user;
+
     const result = await this.authService.refreshAccessToken(id, role);
+
     return result;
   }
 
   @Post('/logout')
   @UseGuards(JwtAccessAuthGuard)
-  public async logout(@CurrentUser() user: any): Promise<void> {
-    const { id, token } = user;
-    const result = await this.authService.logout(id, token);
+  public async logout(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+  ): Promise<void> {
+    const { id } = user;
+
+    await this.authService.logout(id);
+
+    res.clearCookie('refreshToken', { httpOnly: true });
+
+    res.status(HttpStatus.OK).json('Logout success!');
   }
 
   // @Patch('/update-password')

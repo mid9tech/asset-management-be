@@ -93,6 +93,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.type,
+      isActived: user.state,
     };
 
     return {
@@ -108,7 +109,7 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number, refreshToken: string) {
+  async logout(userId: number) {
     return (await this.usersService.updateRefreshToken(userId, null))
       ? true
       : false;
