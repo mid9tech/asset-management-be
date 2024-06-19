@@ -9,7 +9,7 @@ function parseErrorMessage(errorMessage: string): string {
     return `${match[2]} is missing`;
   }
 
-  return 'An unknown error occurred';
+  return errorMessage;
 }
 
 export function FormatError(error) {

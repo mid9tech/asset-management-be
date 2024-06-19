@@ -1,16 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { PrismaService } from 'src/services/prisma/prisma.service';
-import { LOCATION, USER_STATUS } from 'src/shared/enums';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import { PrismaService } from '../../services/prisma/prisma.service';
+import { LOCATION, USER_STATUS } from '../../shared/enums';
+import { MyBadRequestException } from '../../shared/exceptions';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prismaService: PrismaService) {}
   async create(createUserInput: CreateUserInput) {
     try {
-      const { dateOfBirth, joinedDate } = createUserInput;
+      const { dateOfBirth, joinedDate, lastName, firstName } = createUserInput;
+
+      if (lastName === '' && firstName === '') {
+        throw new MyBadRequestException('Name is invalid');
+      }
 
       if (isNaN(Date.parse(dateOfBirth))) {
         throw new MyBadRequestException('DOB is invalid');

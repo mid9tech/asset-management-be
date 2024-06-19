@@ -1,4 +1,4 @@
-import { InputType, Field } from '@nestjs/graphql';
+import { InputType, Field, Args } from '@nestjs/graphql';
 import { IsDateString, IsEnum } from 'class-validator';
 import { GENDER, USER_TYPE } from 'src/shared/enums';
 
