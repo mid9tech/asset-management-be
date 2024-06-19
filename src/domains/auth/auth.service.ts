@@ -3,16 +3,13 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/users.service';
 import { JwtPayload } from 'src/shared/interfaces';
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   create(createAuthDto: CreateAuthDto) {
+    console.log(createAuthDto);
     return 'This action adds a new auth';
   }
 
@@ -25,6 +22,7 @@ export class AuthService {
   }
 
   update(id: number, updateAuthDto: UpdateAuthDto) {
+    console.log(updateAuthDto);
     return `This action updates a #${id} auth`;
   }
 
@@ -33,17 +31,19 @@ export class AuthService {
   }
 
   async validateUser(username: string, pass: string): Promise<any> {
+    console.log(username);
     // This should call your user service to get the user and compare passwords
     const user = { username: 'test', password: 'hashedPassword' }; // Mocked user
     const isPasswordMatching = await bcrypt.compare(pass, user.password);
     if (user && isPasswordMatching) {
-      const { password, ...result } = user;
+      const { ...result } = user;
       return result;
     }
     return null;
   }
 
   async validateUserByPayload(payload: JwtPayload): Promise<any> {
+    console.log(payload);
     // return await this.usersService.findOneById(payload.userId);
   }
 
@@ -55,6 +55,7 @@ export class AuthService {
   }
 
   async refresh(token: string) {
+    console.log(token);
     // Logic for refreshing the token
   }
 }

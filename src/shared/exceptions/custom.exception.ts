@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { GRAPHQL_CODE_ERROR, ENTITY_NAME } from '../constants';
+import { GRAPHQL_CODE_ERROR } from '../constants';
 
 export class MyCustomException extends GraphQLError {
   constructor(

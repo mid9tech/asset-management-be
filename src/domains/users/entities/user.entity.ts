@@ -1,16 +1,10 @@
-import {
-  ObjectType,
-  Field,
-  Int,
-  ID,
-  GraphQLISODateTime,
-} from '@nestjs/graphql';
+import { ObjectType, Field, ID, GraphQLISODateTime } from '@nestjs/graphql';
 import { IsEnum } from 'class-validator';
 import { GENDER, LOCATION, USER_TYPE } from 'src/shared/enums';
 
 @ObjectType()
 export class User {
-  @Field((type) => ID)
+  @Field(() => ID)
   id: number;
 
   @Field(() => String)
