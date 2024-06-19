@@ -1,5 +1,5 @@
 import { CreateUserInput } from '../dto/create-user.input';
-import { data } from '../../../shared/__mocks__/user';
+/* import { data } from '../../../shared/__mocks__/user'; */
 
 export default class UsersServiceMock {
   create = jest.fn().mockImplementation((createUserInput: CreateUserInput) => {
@@ -45,6 +45,6 @@ export default class UsersServiceMock {
       return { message: 'JoinedDate must be at least 18 years after DOB' };
     }
 
-    return data[0];
+    return true;
   });
 }
