@@ -8,7 +8,6 @@ type User {
   staffCode: String!
   lastName: String!
   username: String!
-  password: String!
   gender: String!
   joinedDate: DateTime!
   type: String!
@@ -49,10 +48,12 @@ type Query {
 }
 
 input FindUsersInput {
-  page: Int
-  limit: Int
+  page: Int = 1
+  limit: Int = 20
   query: String
+  sortOrder: String = "asc"
   type: String
+  sort: String = "firstName"
 }
 
 type Mutation {

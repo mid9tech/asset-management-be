@@ -15,15 +15,26 @@ export class UsersResolver {
   }
 
   @Query(() => [User], { name: 'findUsers' })
-  findUsers(
+  async findUsers(
     @Args('request') request: FindUsersInput
   ) {
-    return this.usersService.findAll(request);
+    try {
+      const user = await this.usersService.findOne(18)
+      if (user) {
+        return this.usersService.findAll(request, user);
+      }
+    } catch (error) {
+      return error
+    }
   }
 
   @Query(() => User, { name: 'user' })
   findOne(@Args('id', { type: () => Int }) id: number) {
+   try {
     return this.usersService.findOne(id);
+   } catch (error) {
+    return error
+   }
   }
 
   @Mutation(() => User)

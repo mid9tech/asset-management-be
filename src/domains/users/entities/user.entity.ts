@@ -25,7 +25,7 @@ export class User {
   @Field(() => String)
   username: string;
 
-  @Field(() => String)
+  // @Field(() => String)
   password: string;
 
   @Field(() => String)

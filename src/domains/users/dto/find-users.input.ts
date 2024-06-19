@@ -8,4 +8,9 @@ export class FindUsersInput extends BasePagingRequest {
   @Field(() => String, {nullable: true})
   @IsEnum(USER_TYPE)
   type: USER_TYPE;
+
+  @Field(() => String, { nullable: true, defaultValue: 'firstName' })
+  sort: string;
+
 }
+

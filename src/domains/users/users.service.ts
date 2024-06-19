@@ -3,10 +3,13 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { LOCATION, USER_STATUS } from '../../shared/enums';
-import { MyBadRequestException } from '../../shared/exceptions';
+
 import { HashPW } from 'src/shared/helpers';
+import { MyBadRequestException, MyEntityNotFoundException } from '../../shared/exceptions';
 import { FindUsersInput } from './dto/find-users.input';
-import { Prisma } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import { ENTITY_NAME } from 'src/shared/constants';
 
 @Injectable()
 export class UsersService {
@@ -35,7 +38,7 @@ export class UsersService {
     } catch (error) {}
   }
 
-  async findAll(input: FindUsersInput) {
+ async findAll(input: FindUsersInput, user: User) {
     const { page, limit, query, type } = input;
 
     const where: Prisma.UserWhereInput = {};
@@ -51,17 +54,41 @@ export class UsersService {
         { staffCode: { contains: query, mode: 'insensitive' } },
       ];
     }
+    if (user) {
+      where.location = user.location;
+      where.id = {
+        not: user.id, 
+      };
+    }
 
-    const users = await this.prismaService.user.findMany({
-      where,
-      skip: page && limit ? (page - 1) * limit : undefined,
-      take: limit || undefined,
-    });
+    const sort = input.sort || 'firstName';
+    const sortOrder = input.sortOrder || 'asc';
+    const orderBy = { [sort]: sortOrder };
 
-    return users;
+    try {
+      const users = await this.prismaService.user.findMany({
+        where,
+        skip: page && limit ? (page - 1) * limit : undefined,
+        take: limit || undefined,
+        orderBy,
+      });
+
+      return users;
+    } catch (error) {
+      throw error;
+    }
   }
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+
+  async findOne(id: number): Promise<User | null> {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        id: id,
+      },
+    });
+    if(!user) {
+      throw new MyEntityNotFoundException(ENTITY_NAME.USER)
+    }
+    return user;
   }
 
   update(id: number, updateUserInput: UpdateUserInput) {
