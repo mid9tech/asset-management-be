@@ -18,14 +18,18 @@ import { Request, Response } from 'express-serve-static-core';
 import { LoginInput } from './dto/login-input.dto';
 import { RoleGuard } from '../../common/guard/role.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
-import { CurrentUser, JwtAccessAuthGuard } from '../../common/guard/jwt.guard';
+import {
+  CurrentUser,
+  JwtAccessAuthGuard,
+  JwtRefreshAuthGuard,
+} from '../../common/guard/jwt.guard';
 import { USER_TYPE } from '@prisma/client';
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('/test')
-  @Roles(USER_TYPE.USER)
+  @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   public async findAll(): Promise<any> {
     return 'Hello World!';
@@ -41,11 +45,10 @@ export class AuthController {
   }
 
   @Post('/refresh-access')
-  @UseGuards(JwtAccessAuthGuard)
+  @UseGuards(JwtRefreshAuthGuard)
   public async refreshAccess(@CurrentUser() user: any) {
-    const { id, token } = user;
-    console.log('user', user);
-    const result = await this.authService.refreshAccessToken(id, token);
+    const { id, role } = user;
+    const result = await this.authService.refreshAccessToken(id, role);
     return result;
   }
 
