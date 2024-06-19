@@ -5,6 +5,8 @@ import { PrismaService } from '../../services/prisma/prisma.service';
 import { LOCATION, USER_STATUS } from '../../shared/enums';
 import { MyBadRequestException } from '../../shared/exceptions';
 import { HashPW } from 'src/shared/helpers';
+import { FindUsersInput } from './dto/find-users.input';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -33,8 +35,30 @@ export class UsersService {
     } catch (error) {}
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(input: FindUsersInput) {
+    const { page, limit, query, type } = input;
+
+    const where: Prisma.UserWhereInput = {};
+
+    if (type) {
+      where.type = type;
+    }
+
+    if (query) {
+      where.OR = [
+        { firstName: { contains: query, mode: 'insensitive' } },
+        { lastName: { contains: query, mode: 'insensitive' } },
+        { staffCode: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    const users = await this.prismaService.user.findMany({
+      where,
+      skip: page && limit ? (page - 1) * limit : undefined,
+      take: limit || undefined,
+    });
+
+    return users;
   }
   findOne(id: number) {
     return `This action returns a #${id} user`;

@@ -10,8 +10,6 @@ type User {
   username: String!
   password: String!
   gender: String!
-  salt: String!
-  refreshToken: String
   joinedDate: DateTime!
   type: String!
   dateOfBirth: DateTime!
@@ -40,7 +38,7 @@ type RequestReturn {
 }
 
 type Query {
-  users: [User!]!
+  findUsers(request: FindUsersInput!): [User!]!
   user(id: Int!): User!
   assets: [Asset!]!
   asset(id: Int!): Asset!
@@ -48,6 +46,13 @@ type Query {
   assignment(id: Int!): Assignment!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
+}
+
+input FindUsersInput {
+  page: Int
+  limit: Int
+  query: String
+  type: String
 }
 
 type Mutation {

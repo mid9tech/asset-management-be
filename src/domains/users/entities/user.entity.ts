@@ -32,10 +32,10 @@ export class User {
   @IsEnum(GENDER)
   gender: string;
 
-  @Field(() => String)
+  // @Field(() => String)
   salt: string;
 
-  @Field(() => String, { nullable: true })
+  // @Field(() => String, { nullable: true })
   refreshToken: string;
 
   @Field(() => GraphQLISODateTime)

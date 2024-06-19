@@ -7,4 +7,7 @@ export class BasePagingRequest {
 
   @Field(() => Int, { nullable: true })
   limit: number;
+
+  @Field(() => String, { nullable: true })
+  query: string;
 }
