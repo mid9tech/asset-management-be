@@ -78,6 +78,21 @@ export class UsersService {
     }
   }
 
+  async disableUser(id: number) {
+    try {
+      const result = await this.prismaService.user.update({
+        where: { id },
+        data: {
+          state: USER_STATUS.INACTIVE,
+        },
+      });
+
+      return result ? true : false;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   updateRefreshToken(id: number, refreshToken: string) {
     return this.prismaService.user.update({
       where: { id },

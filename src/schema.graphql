@@ -53,6 +53,7 @@ type Query {
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
+  disableUser(id: Int!): Boolean!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
