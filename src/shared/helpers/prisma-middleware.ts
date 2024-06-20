@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { GenSalt, HashPW } from './hasher';
+import { HashPW } from './hasher';
 
 export async function generateStaffCode(client: PrismaClient) {
   const lastUser = await client.user.findFirst({
