@@ -4,12 +4,14 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { PORT } from './shared/constants';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   app.enableCors({
-    origin: 'http://localhost:3000',
     credentials: true,
+    origin: `http://${configService.get<string>('DOMAIN')}`,
   });
 
   app.use(cookieParser());

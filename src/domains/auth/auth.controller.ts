@@ -3,22 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-<<<<<<< HEAD
-=======
-  UnauthorizedException,
   Res,
   HttpStatus,
-  Req,
-  HttpCode,
   UseGuards,
   Put,
 >>>>>>> f971a5ea1b42406c0f6da56be1f30090d33f573d
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { LoginInput } from './dto/login-input.dto';
 import { RoleGuard } from '../../common/guard/role.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
@@ -37,7 +29,7 @@ export class AuthController {
   @Get('/test')
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  public async findAll(): Promise<any> {
+  public async test(): Promise<any> {
     return 'Hello World!';
   }
 
