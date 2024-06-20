@@ -1,18 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { LOCATION, USER_STATUS } from '../../shared/enums';
-import { MyBadRequestException } from '../../shared/exceptions';
+import { PrismaService } from 'src/services/prisma/prisma.service';
+import { LOCATION, USER_STATUS } from 'src/shared/enums';
+import { MyBadRequestException } from 'src/shared/exceptions';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prismaService: PrismaService) {}
+  calculateAge(dob: Date, compareDate: Date): number {
+    const diff = compareDate.getTime() - dob.getTime();
+    const ageDate = new Date(diff);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }
+
   async create(createUserInput: CreateUserInput) {
     try {
       const { dateOfBirth, joinedDate, lastName, firstName } = createUserInput;
 
-      if (lastName === '' && firstName === '') {
+      if (lastName === '' || firstName === '') {
         throw new MyBadRequestException('Name is invalid');
       }
 
@@ -24,13 +30,33 @@ export class UsersService {
         throw new MyBadRequestException('JoinedDate is invalid');
       }
 
+      // Validate age at joinedDate
+      const dob = new Date(dateOfBirth);
+      const joinDate = new Date(joinedDate);
+      const currentDate = new Date();
+
+      const ageAtJoinDate = this.calculateAge(dob, joinDate);
+      const ageAtCurrentDate = this.calculateAge(dob, currentDate);
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
+        );
+      }
+
+      if (ageAtCurrentDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 currently. Please select a different date of birth.',
+        );
+      }
+
       const result = await this.prismaService.user.create({
         data: {
           ...createUserInput,
           state: USER_STATUS.ACTIVE,
           location: LOCATION.HCM,
-          dateOfBirth: new Date(dateOfBirth).toISOString(),
-          joinedDate: new Date(joinedDate).toISOString(),
+          dateOfBirth: dob.toISOString(),
+          joinedDate: joinDate.toISOString(),
         },
       });
 
@@ -57,6 +83,26 @@ export class UsersService {
 
       if (joinedDate && isNaN(Date.parse(joinedDate))) {
         throw new MyBadRequestException('JoinedDate is invalid');
+      }
+
+      // Validate age at joinedDate
+      const dob = new Date(dateOfBirth);
+      const joinDate = new Date(joinedDate);
+      const currentDate = new Date();
+
+      const ageAtJoinDate = this.calculateAge(dob, joinDate);
+      const ageAtCurrentDate = this.calculateAge(dob, currentDate);
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
+        );
+      }
+
+      if (ageAtCurrentDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 currently. Please select a different date of birth.',
+        );
       }
 
       const result = await this.prismaService.user.update({
