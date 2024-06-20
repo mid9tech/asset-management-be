@@ -22,7 +22,7 @@ export class UsersService {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   }
 
-  async create(createUserInput: CreateUserInput) {
+  async create(createUserInput: CreateUserInput, location: LOCATION) {
     try {
       const { dateOfBirth, joinedDate, lastName, firstName } = createUserInput;
 
@@ -62,7 +62,7 @@ export class UsersService {
         data: {
           ...createUserInput,
           state: USER_STATUS.ACTIVE,
-          location: LOCATION.HCM,
+          location: location,
           dateOfBirth: dob.toISOString(),
           joinedDate: joinDate.toISOString(),
         },
