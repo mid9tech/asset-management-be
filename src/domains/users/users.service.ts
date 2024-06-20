@@ -1,11 +1,14 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { LOCATION, USER_STATUS } from '../../shared/enums';
 
 import { HashPW } from 'src/shared/helpers';
-import { MyBadRequestException, MyEntityNotFoundException } from '../../shared/exceptions';
+import {
+  MyBadRequestException,
+  MyEntityNotFoundException,
+} from '../../shared/exceptions';
 import { FindUsersInput } from './dto/find-users.input';
 import { Prisma, User } from '@prisma/client';
 import { ENTITY_NAME } from '../../shared/constants';
@@ -71,7 +74,7 @@ export class UsersService {
     }
   }
 
- async findAll(input: FindUsersInput, user: User) {
+  async findAll(input: FindUsersInput, user: User) {
     const { page, limit, query, type } = input;
 
     const where: Prisma.UserWhereInput = {};
@@ -90,7 +93,7 @@ export class UsersService {
     if (user) {
       where.location = user.location;
       where.id = {
-        not: user.id, 
+        not: user.id,
       };
     }
 
@@ -118,8 +121,8 @@ export class UsersService {
         id: id,
       },
     });
-    if(!user) {
-      throw new MyEntityNotFoundException(ENTITY_NAME.USER)
+    if (!user) {
+      throw new MyEntityNotFoundException(ENTITY_NAME.USER);
     }
     return user;
   }

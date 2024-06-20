@@ -11,7 +11,6 @@ export class BasePagingRequest {
   @Field(() => String, { nullable: true })
   query: string;
 
-
   @Field(() => String, { nullable: true, defaultValue: 'asc' })
   sortOrder: 'asc' | 'desc';
 }

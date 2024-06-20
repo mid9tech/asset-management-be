@@ -1,9 +1,6 @@
 import { ForbiddenError } from '@nestjs/apollo';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { JwtService } from '@nestjs/jwt';
-
 
 @Injectable()
 export class GaphAuth implements CanActivate {
@@ -24,11 +21,11 @@ export class GaphAuth implements CanActivate {
         return false;
       }
       const token = authHeader.split(' ')[1];
-      console.log(token)
+      console.log(token);
       // ctx.getContext().user = {sub, email}
       return true;
     } catch (error) {
-      throw new ForbiddenError('Unauthorized')
+      throw new ForbiddenError('Unauthorized');
     }
   }
 }

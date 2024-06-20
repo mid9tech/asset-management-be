@@ -82,19 +82,10 @@ input CreateUserInput {
 }
 
 input UpdateUserInput {
-<<<<<<< HEAD
-=======
-  firstName: String
-  lastName: String
->>>>>>> f971a5ea1b42406c0f6da56be1f30090d33f573d
   gender: String
   joinedDate: String
   dateOfBirth: String
   type: String
-<<<<<<< HEAD
-=======
-  id: Int!
->>>>>>> f971a5ea1b42406c0f6da56be1f30090d33f573d
 }
 
 input CreateAssetInput {

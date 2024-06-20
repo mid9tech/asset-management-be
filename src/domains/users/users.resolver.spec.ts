@@ -2,10 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersResolver } from './users.resolver';
 import UsersServiceMock from './__mocks__/mock-users.service';
 import { UsersService } from './users.service';
+import { userDataMock, userInputMock } from 'src/shared/__mocks__';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
-  let usersServiceMock: UsersService;
+  // let usersServiceMock: UsersService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,7 +20,7 @@ describe('UsersResolver', () => {
     }).compile();
 
     resolver = module.get<UsersResolver>(UsersResolver);
-    usersServiceMock = module.get<UsersService>(UsersService);
+    // usersServiceMock = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {

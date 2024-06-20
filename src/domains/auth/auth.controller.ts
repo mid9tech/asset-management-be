@@ -7,7 +7,6 @@ import {
   HttpStatus,
   UseGuards,
   Put,
->>>>>>> f971a5ea1b42406c0f6da56be1f30090d33f573d
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';

@@ -4,7 +4,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   matchRoles(roles: string[], userRole: string) {
     return roles.some((role) => role === userRole);
@@ -23,7 +23,6 @@ export class RoleGuard implements CanActivate {
       request = ctx.getContext().req;
     } else {
       request = context.switchToHttp().getRequest();
-
     }
     // console.log(request.user)
 

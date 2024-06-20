@@ -12,7 +12,7 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Mutation(() => User)
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
@@ -24,25 +24,25 @@ export class UsersResolver {
   @Query(() => [User], { name: 'findUsers' })
   async findUsers(
     @CurrentUser() userReq: User,
-    @Args('request') request: FindUsersInput
+    @Args('request') request: FindUsersInput,
   ) {
     try {
-      const user = await this.usersService.findOne(userReq.id)
+      const user = await this.usersService.findOne(userReq.id);
       if (user) {
         return this.usersService.findAll(request, user);
       }
     } catch (error) {
-      return error
+      return error;
     }
   }
 
   @Query(() => User, { name: 'user' })
   findOne(@Args('id', { type: () => Int }) id: number) {
-   try {
-    return this.usersService.findOne(id);
-   } catch (error) {
-    return error
-   }
+    try {
+      return this.usersService.findOne(id);
+    } catch (error) {
+      return error;
+    }
   }
 
   @Mutation(() => User)
