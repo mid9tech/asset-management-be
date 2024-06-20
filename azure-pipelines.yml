@@ -53,6 +53,10 @@ stages:
               npm run build
             displayName: 'Build project'
 
+          - script: |
+              rm -rf node_modules
+            displayName: 'Remove node_modules directory'
+
           - task: ArchiveFiles@2
             displayName: 'Archive files'
             inputs:
@@ -84,4 +88,4 @@ stages:
                     appName: $(webAppName)
                     runtimeStack: 'NODE|20-lts'
                     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm run start:prod'
+                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm install && npm run start:prod'
