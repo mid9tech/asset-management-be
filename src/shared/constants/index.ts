@@ -40,4 +40,4 @@ export const JWT_CONST = {
 
 const domains = process.env.DOMAINS;
 
-export const allowedOrigins = domains.split(',');
+export const allowedOrigins = domains ? domains.split(',') : [];
