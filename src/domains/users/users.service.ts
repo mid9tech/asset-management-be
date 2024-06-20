@@ -4,7 +4,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
 import { LOCATION, USER_STATUS } from '../../shared/enums';
 import { MyBadRequestException } from '../../shared/exceptions';
-import { HashPW } from 'src/shared/helpers';
+import { HashPW } from '../../shared/helpers';
 
 @Injectable()
 export class UsersService {

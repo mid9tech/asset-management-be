@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthService } from 'src/domains/auth/auth.service';
 
 @Injectable()
 export class JwtAccessAuthGuard extends AuthGuard('access') {
