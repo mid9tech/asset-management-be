@@ -1,4 +1,4 @@
-import { userDataMock } from 'src/shared/__mocks__';
+import { userDataMock } from '../../../shared/__mocks__';
 
 export default class PrismaServiceMock {
   user = {

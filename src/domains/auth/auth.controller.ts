@@ -3,40 +3,110 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  Res,
+  HttpStatus,
+  UseGuards,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-
-@Controller('auth')
+import { Response } from 'express';
+import { LoginInput } from './dto/login-input.dto';
+import { RoleGuard } from '../../common/guard/role.guard';
+import { Roles } from '../../common/decorator/roles.decorator';
+import {
+  CurrentUser,
+  JwtAccessAuthGuard,
+  JwtRefreshAuthGuard,
+} from '../../common/guard/jwt.guard';
+import { USER_TYPE } from '@prisma/client';
+import { ChangePasswordFirstTimeDto } from './dto/change-password-first-time.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+@Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @Get('/test')
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  public async test(): Promise<any> {
+    return 'Hello World!';
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Post('/login')
+  public async login(
+    @Res() res: Response,
+    @Body() loginInput: LoginInput,
+  ): Promise<any> {
+    const result = await this.authService.login(loginInput);
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+    });
+
+    //remove refreshtoken from result
+    delete result.refreshToken;
+    delete result.expiredRefreshToken;
+
+    return res.status(HttpStatus.OK).json(result);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @Post('/refresh-access')
+  @UseGuards(JwtRefreshAuthGuard)
+  public async refreshAccess(@CurrentUser() user: any) {
+    const { id, role } = user;
+
+    const result = await this.authService.refreshAccessToken(id, role);
+
+    return result;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
+  @Post('/logout')
+  @UseGuards(JwtAccessAuthGuard)
+  public async logout(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+  ): Promise<void> {
+    const { id } = user;
+
+    await this.authService.logout(id);
+
+    res.clearCookie('refreshToken', { httpOnly: true });
+
+    res.status(HttpStatus.OK).json('Logout success!');
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  //change password first time
+  @Post('/change-password')
+  @UseGuards(JwtAccessAuthGuard)
+  public async changePassword(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+    @Body() changePasswordFirstTime: ChangePasswordFirstTimeDto,
+  ) {
+    const { newPassword } = changePasswordFirstTime;
+    const result = await this.authService.changePasswordFirstTime(
+      user,
+      newPassword,
+    );
+
+    res.status(HttpStatus.OK).json(result);
+  }
+
+  //change password
+  @Put('/change-password')
+  @UseGuards(JwtAccessAuthGuard)
+  public async changePasswordNormal(
+    @Res() res: Response,
+    @CurrentUser() user: any,
+    @Body() changePassword: ChangePasswordDto,
+  ) {
+    const { oldPassword, newPassword } = changePassword;
+    const result = await this.authService.changePassword(
+      user,
+      oldPassword,
+      newPassword,
+    );
+
+    res.status(HttpStatus.OK).json(result);
   }
 }

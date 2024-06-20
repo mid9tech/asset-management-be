@@ -8,10 +8,7 @@ type User {
   staffCode: String!
   lastName: String!
   username: String!
-  password: String!
   gender: String!
-  salt: String!
-  refreshToken: String
   joinedDate: DateTime!
   type: String!
   dateOfBirth: DateTime!
@@ -40,7 +37,7 @@ type RequestReturn {
 }
 
 type Query {
-  users: [User!]!
+  findUsers(request: FindUsersInput!): [User!]!
   user(id: Int!): User!
   assets: [Asset!]!
   asset(id: Int!): Asset!
@@ -50,9 +47,19 @@ type Query {
   requestReturn(id: Int!): RequestReturn!
 }
 
+input FindUsersInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  type: String
+  sort: String = "firstName"
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
-  updateUser(updateUserInput: UpdateUserInput!, id: String!): User!
+  updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
+  disableUser(id: Int!): Boolean!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
@@ -75,13 +82,10 @@ input CreateUserInput {
 }
 
 input UpdateUserInput {
-  firstName: String
-  lastName: String
   gender: String
   joinedDate: String
   dateOfBirth: String
   type: String
-  id: Int!
 }
 
 input CreateAssetInput {
