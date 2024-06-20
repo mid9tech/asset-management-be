@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsEnum } from 'class-validator';
+
 import { USER_TYPE } from '../../../shared/enums';
 import { BasePagingRequest } from 'src/shared/generics';
 
