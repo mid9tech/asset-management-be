@@ -88,4 +88,4 @@ stages:
                     appName: $(webAppName)
                     runtimeStack: 'NODE|20-lts'
                     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm install && npm run start:prod'
+                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm install && npm run prisma:generate && npm run start:prod'
