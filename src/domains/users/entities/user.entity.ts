@@ -19,17 +19,17 @@ export class User {
   @Field(() => String)
   username: string;
 
-  @Field(() => String)
+  // @Field(() => String)
   password: string;
 
   @Field(() => String)
   @IsEnum(GENDER)
   gender: string;
 
-  @Field(() => String)
+  // @Field(() => String)
   salt: string;
 
-  @Field(() => String, { nullable: true })
+  // @Field(() => String, { nullable: true })
   refreshToken: string;
 
   @Field(() => GraphQLISODateTime)

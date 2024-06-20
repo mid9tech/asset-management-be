@@ -31,6 +31,8 @@ CREATE TABLE "User" (
     "type" "USER_TYPE" NOT NULL DEFAULT 'USER',
     "dateOfBirth" TIMESTAMP(3) NOT NULL,
     "state" BOOLEAN NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
     "location" "LOCATION" NOT NULL DEFAULT 'HCM',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -47,6 +49,8 @@ CREATE TABLE "RequestReturn" (
     "returnedDate" TIMESTAMP(3),
     "state" "REQUEST_RETURN_STATE" NOT NULL DEFAULT 'WAITING_FOR_RETURNING',
     "assignmentId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "RequestReturn_pkey" PRIMARY KEY ("id")
 );
@@ -62,6 +66,8 @@ CREATE TABLE "Assignment" (
     "state" "ASSIGNMENT_STATE" NOT NULL DEFAULT 'WAITING_FOR_ACCEPTANCE',
     "note" TEXT,
     "assetId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Assignment_pkey" PRIMARY KEY ("id")
 );
@@ -76,6 +82,8 @@ CREATE TABLE "Asset" (
     "state" "ASSET_STATE" NOT NULL DEFAULT 'AVAILABLE',
     "location" TEXT NOT NULL,
     "specification" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Asset_pkey" PRIMARY KEY ("id")
 );
@@ -85,6 +93,8 @@ CREATE TABLE "Category" (
     "id" SERIAL NOT NULL,
     "categoryCode" TEXT NOT NULL,
     "categoryName" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );

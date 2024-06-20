@@ -8,14 +8,11 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const configService = app.get(ConfigService);
 
   app.enableCors({
     credentials: true,
     origin: `http://${configService.get<string>('DOMAIN')}`,
   });
-
-  await app.listen(PORT);
 
   app.use(cookieParser());
 
@@ -24,7 +21,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  await app.listen(PORT);
   console.log('App is listening on port ', PORT);
 }
 bootstrap();
