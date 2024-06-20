@@ -70,7 +70,7 @@ export class AuthController {
 
     await this.authService.logout(id);
 
-    res.clearCookie('refreshToken', { httpOnly: true });
+    res.clearCookie('refreshToken');
 
     res.status(HttpStatus.OK).json('Logout success!');
   }
