@@ -55,6 +55,7 @@ stages:
 
           - script: |
               rm -rf node_modules
+              rm -rf dist
             displayName: 'Remove node_modules directory'
 
           - task: ArchiveFiles@2
@@ -88,4 +89,4 @@ stages:
                     appName: $(webAppName)
                     runtimeStack: 'NODE|20-lts'
                     package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm install && npm rebuild bcrypt --build-from-source && npm run prisma:generate && npm run start:prod'
+                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm install && npm run prisma:generate && npm run build && npm run start:prod'
