@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersResolver } from './users.resolver';
 import UsersServiceMock from './__mocks__/mock-users.service';
 import { UsersService } from './users.service';
-import { userDataMock, userInputMock } from 'src/shared/__mocks__';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
