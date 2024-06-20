@@ -37,3 +37,7 @@ export const JWT_CONST = {
   ACCESS_EXPIRED_GENERATION: 60 * 60,
   REFRESH_EXPIRED_GENERATION: 60 * 60 * 24 * 30,
 };
+
+const domains = process.env.DOMAINS;
+
+export const allowedOrigins = domains.split(',');
