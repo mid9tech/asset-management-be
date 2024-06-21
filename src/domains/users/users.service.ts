@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { LOCATION, USER_STATUS } from '../../shared/enums';
+import { LOCATION, USER_FIRST_LOGIN, USER_STATUS } from '../../shared/enums';
 
 import { HashPW } from 'src/shared/helpers';
 import {
@@ -61,7 +61,7 @@ export class UsersService {
       const result = await this.prismaService.user.create({
         data: {
           ...createUserInput,
-          state: USER_STATUS.ACTIVE,
+          state: USER_FIRST_LOGIN.FALSE,
           location: location,
           dateOfBirth: dob.toISOString(),
           joinedDate: joinDate.toISOString(),
@@ -183,7 +183,7 @@ export class UsersService {
       const result = await this.prismaService.user.update({
         where: { id },
         data: {
-          state: USER_STATUS.INACTIVE,
+          isDisabled: USER_STATUS.INACTIVE,
         },
       });
 

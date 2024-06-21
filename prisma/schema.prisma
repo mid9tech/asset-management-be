@@ -61,6 +61,7 @@ model User {
   gender       GENDER          @default(OTHER)
   salt         String?
   refreshToken String?
+  isDisabled   Boolean         @default(false)
   joinedDate   DateTime
   type         USER_TYPE       @default(USER)
   dateOfBirth  DateTime
