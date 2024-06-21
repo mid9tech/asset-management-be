@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { LOCATION, USER_FIRST_LOGIN, USER_STATUS } from '../../shared/enums';
+import {
+  LOCATION,
+  USER_FIRST_LOGIN,
+  USER_STATUS,
+  USER_TYPE,
+} from '../../shared/enums';
 
 import { HashPW } from 'src/shared/helpers';
 import {
@@ -58,11 +63,19 @@ export class UsersService {
         );
       }
 
+      let pickLocation;
+
+      if (createUserInput.type === USER_TYPE.ADMIN) {
+        pickLocation = createUserInput.location;
+      } else {
+        pickLocation = location;
+      }
+
       const result = await this.prismaService.user.create({
         data: {
           ...createUserInput,
           state: USER_FIRST_LOGIN.FALSE,
-          location: location,
+          location: pickLocation,
           dateOfBirth: dob.toISOString(),
           joinedDate: joinDate.toISOString(),
         },

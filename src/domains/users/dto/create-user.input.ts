@@ -1,6 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql';
 import { IsDateString, IsEnum } from 'class-validator';
-import { GENDER, USER_TYPE } from '../../../shared/enums';
+import { GENDER, LOCATION, USER_TYPE } from 'src/shared/enums';
 
 @InputType()
 export class CreateUserInput {
@@ -27,4 +27,8 @@ export class CreateUserInput {
   @Field(() => String)
   @IsEnum(USER_TYPE)
   type: USER_TYPE;
+
+  @Field({ nullable: true })
+  @IsEnum(LOCATION)
+  location: LOCATION;
 }
