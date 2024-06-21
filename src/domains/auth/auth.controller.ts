@@ -88,7 +88,6 @@ export class AuthController {
       user,
       newPassword,
     );
-
     res.status(HttpStatus.OK).json(result);
   }
 
