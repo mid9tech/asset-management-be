@@ -1,14 +1,19 @@
-import { InputType, Field } from '@nestjs/graphql';
-import { IsEnum } from 'class-validator';
+import { InputType, Field, ObjectType } from '@nestjs/graphql';
+
 import { USER_TYPE } from '../../../shared/enums';
-import { BasePagingRequest } from 'src/shared/generics';
+import { BasePagingRequest, BasePagingResponse } from 'src/shared/generics';
+import { User } from '../entities/user.entity';
 
 @InputType()
 export class FindUsersInput extends BasePagingRequest {
   @Field(() => String, { nullable: true })
-  @IsEnum(USER_TYPE)
   type: USER_TYPE;
 
   @Field(() => String, { nullable: true, defaultValue: 'firstName' })
   sort: string;
+}
+@ObjectType()
+export class FindUsersOutput extends BasePagingResponse {
+  @Field(() => [User])
+  users: User[];
 }

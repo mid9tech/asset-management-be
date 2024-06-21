@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { FindUsersInput } from './dto/find-users.input';
+import { FindUsersInput, FindUsersOutput } from './dto/find-users.input';
 import { UseGuards } from '@nestjs/common';
 import { USER_TYPE } from '@prisma/client';
 import { Roles } from 'src/common/decorator/roles.decorator';
@@ -27,7 +27,7 @@ export class UsersResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => [User], { name: 'findUsers' })
+  @Query(() => FindUsersOutput, { name: 'findUsers' })
   async findUsers(
     @CurrentUser() userReq: User,
     @Args('request') request: FindUsersInput,
@@ -35,7 +35,8 @@ export class UsersResolver {
     try {
       const user = await this.usersService.findOne(userReq.id);
       if (user) {
-        return this.usersService.findAll(request, user);
+        const result = await this.usersService.findAll(request, user);
+        return result;
       }
     } catch (error) {
       return error;
