@@ -29,7 +29,7 @@ export const JWT_CONST = {
   ACCESS_SECRET: process.env.SECRET_ACCESS_TOKEN_KEY,
   REFRESH_SECRET: process.env.SECRET_REFRESH_TOKEN_KEY,
   ACCESS_EXPIRED: () => {
-    return 60 * 60 * 1000 + new Date().getTime();
+    return 60 * 60 * 24 * 1000 + new Date().getTime();
   }, // mini seconds one hour from now (integer)
   REFRESH_EXPIRED: () => {
     return 60 * 60 * 24 * 30 * 1000 + new Date().getTime();

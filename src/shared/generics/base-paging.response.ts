@@ -10,4 +10,7 @@ export class BasePagingResponse {
 
   @Field(() => Int, { nullable: true })
   total: number;
+
+  @Field(() => Int, { nullable: true })
+  totalPages: number;
 }

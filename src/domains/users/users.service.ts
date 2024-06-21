@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from '../../services/prisma/prisma.service';
-import { LOCATION, USER_STATUS } from '../../shared/enums';
-
+import { GENDER, LOCATION, USER_STATUS, USER_TYPE } from '../../shared/enums';
+import { $Enums } from '@prisma/client';
 import { HashPW } from 'src/shared/helpers';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
 } from '../../shared/exceptions';
-import { FindUsersInput } from './dto/find-users.input';
+import { FindUsersInput, FindUsersOutput } from './dto/find-users.input';
 import { Prisma, User } from '@prisma/client';
 import { ENTITY_NAME } from '../../shared/constants';
 
@@ -75,12 +75,19 @@ export class UsersService {
   }
 
   async findAll(input: FindUsersInput, user: User) {
-    const { page, limit, query, type } = input;
+    const {
+      page = 1,
+      limit = 10,
+      query,
+      type,
+      sort = 'firstName',
+      sortOrder = 'asc',
+    } = input;
 
     const where: Prisma.UserWhereInput = {};
 
     if (type) {
-      where.type = type;
+      where.type = type as $Enums.USER_TYPE; // Map to Prisma enum
     }
 
     if (query) {
@@ -91,27 +98,50 @@ export class UsersService {
       ];
     }
     if (user) {
-      where.location = user.location;
+      where.location = user.location as $Enums.LOCATION; // Map to Prisma enum
       where.id = {
         not: user.id,
       };
     }
 
-    const sort = input.sort || 'firstName';
-    const sortOrder = input.sortOrder || 'asc';
     const orderBy = { [sort]: sortOrder };
 
     try {
+      const total = await this.prismaService.user.count({ where });
       const users = await this.prismaService.user.findMany({
         where,
-        skip: page && limit ? (page - 1) * limit : undefined,
-        take: limit || undefined,
+        skip: (page - 1) * limit,
+        take: limit,
         orderBy,
       });
 
-      return users;
+      const totalPages = Math.ceil(total / limit);
+
+      const result = new FindUsersOutput();
+      result.users = users.map((user) => ({
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        staffCode: user.staffCode,
+        username: user.username,
+        password: user.password,
+        gender: user.gender as GENDER, // Map to application enum
+        salt: user.salt,
+        refreshToken: user.refreshToken,
+        joinedDate: user.joinedDate.toString(),
+        type: user.type as USER_TYPE, // Map to application enum
+        dateOfBirth: user.dateOfBirth.toString(),
+        state: user.state,
+        location: user.location as LOCATION, // Map to application enum
+      }));
+      result.page = page;
+      result.limit = limit;
+      result.total = total;
+      result.totalPages = totalPages;
+      return result;
     } catch (error) {
-      throw error;
+      console.error('Error finding users:', error);
+      throw new Error('Error finding users');
     }
   }
 

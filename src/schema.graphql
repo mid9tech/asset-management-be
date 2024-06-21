@@ -9,17 +9,20 @@ type User {
   lastName: String!
   username: String!
   gender: String!
-  joinedDate: DateTime!
+  joinedDate: String!
+  dateOfBirth: String!
   type: String!
-  dateOfBirth: DateTime!
   state: Boolean!
   location: String!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
+type FindUsersOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  users: [User!]!
+}
 
 type Asset {
   """Example field (placeholder)"""
@@ -37,7 +40,7 @@ type RequestReturn {
 }
 
 type Query {
-  findUsers(request: FindUsersInput!): [User!]!
+  findUsers(request: FindUsersInput!): FindUsersOutput!
   user(id: Int!): User!
   assets: [Asset!]!
   asset(id: Int!): Asset!

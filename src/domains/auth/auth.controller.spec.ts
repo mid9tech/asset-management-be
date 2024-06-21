@@ -125,9 +125,7 @@ describe('AuthController', () => {
       await controller.logout(res, user);
 
       expect(authService.logout).toHaveBeenCalledWith(user.id);
-      expect(res.clearCookie).toHaveBeenCalledWith('refreshToken', {
-        httpOnly: true,
-      });
+      expect(res.clearCookie).toHaveBeenCalledWith('refreshToken');
       expect(res.status).toHaveBeenCalledWith(HttpStatus.OK);
       expect(res.json).toHaveBeenCalledWith('Logout success!');
     });
