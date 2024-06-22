@@ -3,6 +3,7 @@ import { UsersResolver } from './users.resolver';
 import UsersServiceMock from './__mocks__/mock-users.service';
 import { UsersService } from './users.service';
 import { userDataMock, userInputMock } from 'src/shared/__mocks__';
+import { LOCATION, USER_STATUS, USER_TYPE } from 'src/shared/enums';
 
 describe('UsersResolver', () => {
   let resolver: UsersResolver;
@@ -29,7 +30,17 @@ describe('UsersResolver', () => {
 
   describe('createUser', () => {
     it('should create a user', async () => {
-      const result = await resolver.createUser(userInputMock[0]);
+      const result = await resolver.createUser(userInputMock[0], {
+        firstName: 'Hai',
+        id: 1,
+        joinedDate: '2022-02-02',
+        lastName: 'Nguyen Van',
+        location: LOCATION.HN,
+        type: USER_TYPE.ADMIN,
+        staffCode: 'admin1',
+        state: USER_STATUS.ACTIVE,
+        username: 'admin1',
+      });
       expect(result).toEqual(userDataMock);
     });
   });

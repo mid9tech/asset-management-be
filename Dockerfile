@@ -9,9 +9,11 @@ COPY package*.json ./
 # Clean npm cache and install dependencies
 RUN npm install
 
-
 # Copy the rest of the application code
 COPY . .
+
+# RUN prisma
+RUN npm run prisma:generate
 
 # Build the application
 RUN npm run build
@@ -30,8 +32,7 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 # Copy the prisma directory
 
-# RUN prisma
-RUN npm run prisma:generate
+RUN npm install -g npm@10.8.1 --force
 
 # Expose the port the app runs on
 EXPOSE 8080

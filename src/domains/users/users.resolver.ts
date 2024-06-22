@@ -9,14 +9,20 @@ import { USER_TYPE } from '@prisma/client';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
+import { CurrentUserInterface } from 'src/shared/generics';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
-    return this.usersService.create(createUserInput);
+  createUser(
+    @Args('createUserInput') createUserInput: CreateUserInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.usersService.create(createUserInput, userReq.location);
   }
 
   @Roles(USER_TYPE.ADMIN)
