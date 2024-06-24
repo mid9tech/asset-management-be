@@ -25,8 +25,21 @@ type FindUsersOutput {
 }
 
 type Asset {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: ID!
+  assetCode: String!
+  assetName: String!
+  categoryId: Int!
+  installedDate: String!
+  state: String!
+  location: String!
+  specification: String
+  category: Category!
+}
+
+type Category {
+  id: ID!
+  categoryName: String!
+  categoryCode: String!
 }
 
 type Assignment {
@@ -42,8 +55,9 @@ type RequestReturn {
 type Query {
   findUsers(request: FindUsersInput!): FindUsersOutput!
   user(id: Int!): User!
-  assets: [Asset!]!
+  getAllAssets: [Asset!]!
   asset(id: Int!): Asset!
+  getCategories: [Category!]!
   assignments: [Assignment!]!
   assignment(id: Int!): Assignment!
   requestReturns: [RequestReturn!]!
@@ -67,6 +81,7 @@ type Mutation {
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
   removeAsset(id: Int!): Asset!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
   removeAssignment(id: Int!): Assignment!
@@ -94,14 +109,43 @@ input UpdateUserInput {
 }
 
 input CreateAssetInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """Name of the asset"""
+  assetName: String!
+
+  """ID of the category"""
+  categoryId: Int!
+
+  """Specification of the asset"""
+  specification: String
+
+  """Date the asset was installed"""
+  installedDate: String!
+
+  """State of the asset"""
+  state: String!
 }
 
 input UpdateAssetInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  """Name of the asset"""
+  assetName: String
+
+  """ID of the category"""
+  categoryId: Int
+
+  """Specification of the asset"""
+  specification: String
+
+  """Date the asset was installed"""
+  installedDate: String
+
+  """State of the asset"""
+  state: String
   id: Int!
+}
+
+input CreateCategoryInput {
+  categoryName: String!
+  categoryCode: String!
 }
 
 input CreateAssignmentInput {

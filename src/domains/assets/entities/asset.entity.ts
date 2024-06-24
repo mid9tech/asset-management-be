@@ -1,4 +1,6 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { ASSET_STATE } from '@prisma/client';
+import { IsEnum } from 'class-validator';
 
 @ObjectType()
 export class Asset {
@@ -18,11 +20,12 @@ export class Asset {
   installedDate: string;
 
   @Field(() => String)
+  @IsEnum(ASSET_STATE)
   state: string;
 
   @Field(() => String)
   location: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   specification: string;
 }
