@@ -34,54 +34,63 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should create a user', async () => {
-      const result = await usersService.create(userInputMock[0], userInputMock[0].location);
+      const result = await usersService.create(
+        userInputMock[0],
+        userInputMock[0].location,
+      );
       expect(result).toEqual(userDataMock);
     });
 
     it('should throw MyBadRequestException for invalid DOB', async () => {
-      await expect(usersService.create(userInputMock[1] ,userInputMock[1].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[1], userInputMock[1].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     it('should throw MyBadRequestException for invalid joinedDate', async () => {
-      await expect(usersService.create(userInputMock[2], userInputMock[2].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[2], userInputMock[2].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     it('should throw MyBadRequestException for invalid firstName', async () => {
-      await expect(usersService.create(userInputMock[3],userInputMock[1].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[3], userInputMock[1].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     it('should throw MyBadRequestException for invalid lastName', async () => {
-      await expect(usersService.create(userInputMock[4] ,userInputMock[1].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[4], userInputMock[1].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     // New test cases
     it('should throw MyBadRequestException for user under 18 at join date', async () => {
-      await expect(usersService.create(userInputMock[5] ,userInputMock[1].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[5], userInputMock[1].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     it('should create a user who is exactly 18 at join date', async () => {
-      const result = await usersService.create(userInputMock[7], userInputMock[1].location);
+      const result = await usersService.create(
+        userInputMock[7],
+        userInputMock[1].location,
+      );
       expect(result).toEqual(userDataMock);
     });
 
     it('should throw MyBadRequestException for user under 18 at current date', async () => {
-      await expect(usersService.create(userInputMock[6] ,userInputMock[1].location)).rejects.toThrowError(
-        MyBadRequestException,
-      );
+      await expect(
+        usersService.create(userInputMock[6], userInputMock[1].location),
+      ).rejects.toThrowError(MyBadRequestException);
     });
 
     it('should create a user who is exactly 18 at current date', async () => {
-      const result = await usersService.create(userInputMock[8],userInputMock[1].location);
+      const result = await usersService.create(
+        userInputMock[8],
+        userInputMock[1].location,
+      );
       expect(result).toEqual(userDataMock);
     });
   });

@@ -82,6 +82,7 @@ input CreateUserInput {
   joinedDate: String!
   dateOfBirth: String!
   type: String!
+  location: String
 }
 
 input UpdateUserInput {
@@ -89,6 +90,7 @@ input UpdateUserInput {
   joinedDate: String
   dateOfBirth: String
   type: String
+  location: String
 }
 
 input CreateAssetInput {

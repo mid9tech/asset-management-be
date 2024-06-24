@@ -1,17 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { PrismaService } from '../../services/prisma/prisma.service';
-import { GENDER, LOCATION, USER_STATUS, USER_TYPE } from '../../shared/enums';
+import { PrismaService } from 'src/services/prisma/prisma.service';
 import { $Enums } from '@prisma/client';
+import {
+  LOCATION,
+  USER_FIRST_LOGIN,
+  USER_STATUS,
+  USER_TYPE,
+  GENDER,
+} from 'src/shared/enums';
+
 import { HashPW } from 'src/shared/helpers';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
-} from '../../shared/exceptions';
+} from 'src/shared/exceptions';
 import { FindUsersInput, FindUsersOutput } from './dto/find-users.input';
 import { Prisma, User } from '@prisma/client';
-import { ENTITY_NAME } from '../../shared/constants';
+import { ENTITY_NAME } from 'src/shared/constants';
 
 @Injectable()
 export class UsersService {
@@ -58,11 +65,19 @@ export class UsersService {
         );
       }
 
+      let pickLocation;
+
+      if (createUserInput.type === USER_TYPE.ADMIN) {
+        pickLocation = createUserInput.location;
+      } else {
+        pickLocation = location;
+      }
+
       const result = await this.prismaService.user.create({
         data: {
           ...createUserInput,
-          state: USER_STATUS.ACTIVE,
-          location: location,
+          state: USER_FIRST_LOGIN.FALSE,
+          location: pickLocation,
           dateOfBirth: dob.toISOString(),
           joinedDate: joinDate.toISOString(),
         },
@@ -213,7 +228,7 @@ export class UsersService {
       const result = await this.prismaService.user.update({
         where: { id },
         data: {
-          state: USER_STATUS.INACTIVE,
+          isDisabled: USER_STATUS.INACTIVE,
         },
       });
 
