@@ -1,3 +1,3 @@
 export * from './user';
 export * from './asset';
-export * from './assignment';
+export * from './assigment';
