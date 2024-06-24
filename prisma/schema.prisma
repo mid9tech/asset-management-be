@@ -118,7 +118,7 @@ model Asset {
   categoryId    Int
   installedDate DateTime
   state         ASSET_STATE  @default(AVAILABLE)
-  location      String
+  location      LOCATION
   specification String
   assignments   Assignment[]
   createdAt     DateTime     @default(now())
