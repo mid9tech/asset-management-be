@@ -118,8 +118,8 @@ model Asset {
   categoryId    Int
   installedDate DateTime
   state         ASSET_STATE  @default(AVAILABLE)
-  location      String
-  specification String
+  location      LOCATION
+  specification String?
   assignments   Assignment[]
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
@@ -127,8 +127,8 @@ model Asset {
 
 model Category {
   id           Int      @id @default(autoincrement())
-  categoryCode String
-  categoryName String
+  categoryCode String   @unique
+  categoryName String   @unique
   assets       Asset[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
