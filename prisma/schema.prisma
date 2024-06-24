@@ -61,6 +61,7 @@ model User {
   gender       GENDER          @default(OTHER)
   salt         String?
   refreshToken String?
+  isAssigned   Boolean         @default(false)
   isDisabled   Boolean         @default(false)
   joinedDate   DateTime
   type         USER_TYPE       @default(USER)
@@ -93,21 +94,23 @@ model RequestReturn {
 }
 
 model Assignment {
-  id             Int              @id @default(autoincrement())
-  assetCode      String
-  assetName      String
-  assignedTo     User             @relation("AssignedTo", fields: [assignedToId], references: [id])
-  assignedToId   Int
-  assignedBy     User             @relation("AssignedBy", fields: [assignedById], references: [id])
-  assignedById   Int
-  assignedDate   DateTime
-  state          ASSIGNMENT_STATE @default(WAITING_FOR_ACCEPTANCE)
-  note           String?
-  requestReturns RequestReturn[]
-  Asset          Asset?           @relation(fields: [assetId], references: [id])
-  assetId        Int?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                 Int              @id @default(autoincrement())
+  assetCode          String
+  assetName          String
+  assignedTo         User             @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId       Int
+  assignedToUsername String
+  assignedBy         User             @relation("AssignedBy", fields: [assignedById], references: [id])
+  assignedById       Int
+  assignedDate       DateTime
+  state              ASSIGNMENT_STATE @default(WAITING_FOR_ACCEPTANCE)
+  note               String?
+  location           LOCATION        
+  requestReturns     RequestReturn[]
+  Asset              Asset?           @relation(fields: [assetId], references: [id])
+  assetId            Int?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 }
 
 model Asset {
@@ -118,7 +121,7 @@ model Asset {
   categoryId    Int
   installedDate DateTime
   state         ASSET_STATE  @default(AVAILABLE)
-  location      String
+  location      LOCATION     @default(HCM)
   specification String
   assignments   Assignment[]
   createdAt     DateTime     @default(now())
