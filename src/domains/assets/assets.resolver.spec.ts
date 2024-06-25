@@ -13,17 +13,11 @@ import {
   USER_FIRST_LOGIN,
 } from 'src/shared/enums';
 import { CurrentUserInterface } from 'src/shared/generics';
-import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
-import { RoleGuard } from 'src/common/guard/role.guard';
-
-import { GqlExecutionContext } from '@nestjs/graphql';
-import { ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 
 describe('AssetsResolver', () => {
   let resolver: AssetsResolver;
   let assetsService: AssetsService;
-  let categoriesService: CategoriesService;
+  // let categoriesService: CategoriesService;
 
   const mockCurrentUser: CurrentUserInterface = {
     id: 1,
@@ -77,7 +71,7 @@ describe('AssetsResolver', () => {
 
     resolver = module.get<AssetsResolver>(AssetsResolver);
     assetsService = module.get<AssetsService>(AssetsService);
-    categoriesService = module.get<CategoriesService>(CategoriesService);
+    // categoriesService = module.get<CategoriesService>(CategoriesService);
   });
 
   it('should be defined', () => {
