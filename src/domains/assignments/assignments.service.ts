@@ -3,7 +3,7 @@ import { CreateAssignmentInput } from './dto/create-assignment.input';
 import { UpdateAssignmentInput } from './dto/update-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
-import { ASSET_STATE, ASSIGNMENT_STATE, LOCATION } from 'src/shared/enums';
+import { ASSET_STATE, ASSIGNMENT_STATE } from 'src/shared/enums';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { FindAssignmentsInput } from './dto/find-assignment.input';
 import { Prisma } from '@prisma/client';

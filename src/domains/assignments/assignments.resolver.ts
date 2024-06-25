@@ -51,12 +51,12 @@ export class AssignmentsResolver {
     return this.assignmentsService.findAll(findAssignmentsInput, userReq);
   }
 
-  @ResolveField((returns) => User, { name: 'assigner' })
+  @ResolveField(() => User, { name: 'assigner' })
   getAssigner(@Parent() assignment: Assignment) {
     return this.usersService.findOne(assignment.assignedById);
   }
 
-  @ResolveField((returns) => User, { name: 'assignee' })
+  @ResolveField(() => User, { name: 'assignee' })
   getAssignee(@Parent() assignment: Assignment) {
     return this.usersService.findOne(assignment.assignedToId);
   }
