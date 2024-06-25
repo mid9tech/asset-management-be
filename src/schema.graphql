@@ -33,7 +33,14 @@ type Asset {
   state: String!
   location: String!
   specification: String
-  category: Category!
+}
+
+type FindAssetsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  assets: [Asset!]!
 }
 
 type Category {
@@ -55,8 +62,8 @@ type RequestReturn {
 type Query {
   findUsers(request: FindUsersInput!): FindUsersOutput!
   user(id: Int!): User!
-  getAllAssets: [Asset!]!
-  asset(id: Int!): Asset!
+  findAssets(request: FindAssetsInput!): FindAssetsOutput!
+  findOneAsset(id: Int!): Asset!
   getCategories: [Category!]!
   assignments: [Assignment!]!
   assignment(id: Int!): Assignment!
@@ -73,14 +80,22 @@ input FindUsersInput {
   sort: String = "firstName"
 }
 
+input FindAssetsInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  sortField: String = "assetCode"
+  stateFilter: String
+  categoryFilter: Int
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
   disableUser(id: Int!): Boolean!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
-  updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
-  removeAsset(id: Int!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
@@ -123,24 +138,6 @@ input CreateAssetInput {
 
   """State of the asset"""
   state: String!
-}
-
-input UpdateAssetInput {
-  """Name of the asset"""
-  assetName: String
-
-  """ID of the category"""
-  categoryId: Int
-
-  """Specification of the asset"""
-  specification: String
-
-  """Date the asset was installed"""
-  installedDate: String
-
-  """State of the asset"""
-  state: String
-  id: Int!
 }
 
 input CreateCategoryInput {
