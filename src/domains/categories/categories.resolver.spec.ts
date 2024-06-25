@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesResolver } from './categories.resolver';
 import { CategoriesService } from './categories.service';
-import { Category } from './entities/category.entity';
+
 import { CreateCategoryInput } from './dto/create-category.input';
 
 describe('CategoriesResolver', () => {

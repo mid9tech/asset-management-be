@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAssetInput } from './dto/create-asset.input';
-import { UpdateAssetInput } from './dto/update-asset.input';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { LOCATION, ASSET_STATE } from 'src/shared/enums';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { CategoriesService } from '../categories/categories.service';
+import { FindAssetsInput } from './dto/find-assets.input';
+import { Prisma } from '@prisma/client';
+import { FindAssetsOutput } from './dto/find-assets.output';
 
 @Injectable()
 export class AssetsService {
@@ -46,29 +48,86 @@ export class AssetsService {
     return result;
   }
 
+  async findAssets(request: FindAssetsInput, location: LOCATION) {
+    const {
+      page = 1,
+      limit = 20,
+      query,
+      sortField = 'assetCode',
+      sortOrder = 'asc',
+      stateFilter,
+      categoryFilter,
+    } = request;
+
+    const where: Prisma.AssetWhereInput = {};
+
+    if (query) {
+      where.OR = [
+        { assetCode: { contains: query, mode: 'insensitive' } },
+        { assetName: { contains: query, mode: 'insensitive' } },
+      ];
+    }
+
+    if (location) {
+      where.location = location;
+    }
+    const orderBy = { [sortField]: sortOrder };
+    console.log(ASSET_STATE[stateFilter]);
+    if (stateFilter) {
+      where.state = ASSET_STATE[stateFilter];
+    }
+
+    if (categoryFilter) {
+      where.categoryId = categoryFilter;
+    }
+
+    try {
+      const total = await this.prismaService.asset.count({ where });
+      const assets = await this.prismaService.asset.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy,
+      });
+
+      const totalPages = Math.ceil(total / limit);
+
+      const result = new FindAssetsOutput();
+      result.assets = assets.map((asset) => ({
+        ...asset,
+        installedDate: asset.installedDate.toISOString(),
+      }));
+      result.page = page;
+      result.limit = limit;
+      result.total = total;
+      result.totalPages = totalPages;
+      return result;
+    } catch (error) {
+      console.error('Error finding assets:', error);
+      throw new MyBadRequestException('Error finding assets');
+    }
+  }
+
   async findAll() {
     return this.prismaService.asset.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asset`;
-  }
-
-  update(id: number, updateAssetInput: UpdateAssetInput) {
-    return `This action updates a #${id} asset: ${updateAssetInput}`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} asset`;
+  async findOne(id: number, location: LOCATION) {
+    const asset = await this.prismaService.asset.findUnique({
+      where: { id },
+    });
+    if (asset.location !== location) {
+      throw new MyBadRequestException('Asset not found in your location');
+    }
+    return asset;
   }
 
   async generateAssetCode(categoryId: number) {
     const prefix = await this.categoryService.getPrefixById(categoryId);
-    const lastAsset = await this.prismaService.asset.findFirst({
-      orderBy: { id: 'desc' },
+    const lastAsset = await this.prismaService.asset.count({
       where: { categoryId: categoryId },
     });
-    const newId = lastAsset ? lastAsset.id + 1 : 1;
+    const newId = lastAsset ? lastAsset + 1 : 1;
     const assetCode = `${prefix}${newId.toString().padStart(6, '0')}`;
     return assetCode;
   }
