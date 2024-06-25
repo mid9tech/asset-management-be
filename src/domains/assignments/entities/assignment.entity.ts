@@ -1,7 +1,35 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { User } from 'src/domains/users/entities/user.entity';
+import { ASSIGNMENT_STATE } from 'src/shared/enums';
 
 @ObjectType()
 export class Assignment {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  assetCode: string;
+
+  @Field()
+  assetName: string;
+
+  @Field(() => User, { name: 'assigner' })
+  assigner: User;
+  assignedById: number;
+
+  @Field(() => User, { name: 'assignee' })
+  assignee: User;
+  assignedToId: number;
+
+  @Field()
+  state: ASSIGNMENT_STATE;
+
+  @Field()
+  note: string;
+
+  @Field()
+  assignedDate: string;
+
+  @Field(() => Int)
+  assetId: number;
 }

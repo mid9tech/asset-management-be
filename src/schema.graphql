@@ -25,13 +25,33 @@ type FindUsersOutput {
 }
 
 type Asset {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  assetCode: String!
+  assetName: String!
+  categoryId: Float!
+  installedDate: String!
+  state: String!
+  location: String!
 }
 
 type Assignment {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  assetCode: String!
+  assetName: String!
+  assigner: User!
+  assignee: User!
+  state: String!
+  note: String!
+  assignedDate: String!
+  assetId: Int!
+}
+
+type FindAssignmentsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  assignments: [Assignment!]!
 }
 
 type RequestReturn {
@@ -44,7 +64,7 @@ type Query {
   user(id: Int!): User!
   assets: [Asset!]!
   asset(id: Int!): Asset!
-  assignments: [Assignment!]!
+  findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
@@ -57,6 +77,15 @@ input FindUsersInput {
   sortOrder: String = "asc"
   type: String
   sort: String = "firstName"
+}
+
+input FindAssignmentsInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  state: String
+  sort: String = "assetName"
 }
 
 type Mutation {
@@ -105,13 +134,27 @@ input UpdateAssetInput {
 }
 
 input CreateAssignmentInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  assetCode: String!
+  assetName: String!
+  assignedToId: Int!
+  assignedToUsername: String!
+  assignedById: Int!
+  state: String!
+  assignedDate: String!
+  note: String!
+  assetId: Int!
 }
 
 input UpdateAssignmentInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  assetCode: String
+  assetName: String
+  assignedToId: Int
+  assignedToUsername: String
+  assignedById: Int
+  state: String
+  assignedDate: String
+  note: String
+  assetId: Int
   id: Int!
 }
 

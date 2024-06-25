@@ -1,6 +1,6 @@
 import { InputType, Field, ObjectType } from '@nestjs/graphql';
 
-import { USER_TYPE } from '../../../shared/enums';
+import { USER_TYPE } from 'src/shared/enums';
 import { BasePagingRequest, BasePagingResponse } from 'src/shared/generics';
 import { User } from '../entities/user.entity';
 
