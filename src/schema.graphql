@@ -50,12 +50,29 @@ type Category {
 }
 
 type Assignment {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  assetCode: String!
+  assetName: String!
+  assigner: User!
+  assignee: User!
+  state: String!
+  note: String!
+  assignedDate: String!
+  assetId: Int!
+}
+
+type FindAssignmentsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  assignments: [Assignment!]!
 }
 
 type RequestReturn {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int!
 }
 
@@ -100,8 +117,12 @@ type Mutation {
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
   removeAssignment(id: Int!): Assignment!
-  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
-  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
+  createRequestReturn(
+    createRequestReturnInput: CreateRequestReturnInput!
+  ): RequestReturn!
+  updateRequestReturn(
+    updateRequestReturnInput: UpdateRequestReturnInput!
+  ): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
 }
 
@@ -124,19 +145,29 @@ input UpdateUserInput {
 }
 
 input CreateAssetInput {
-  """Name of the asset"""
+  """
+  Name of the asset
+  """
   assetName: String!
 
-  """ID of the category"""
+  """
+  ID of the category
+  """
   categoryId: Int!
 
-  """Specification of the asset"""
+  """
+  Specification of the asset
+  """
   specification: String
 
-  """Date the asset was installed"""
+  """
+  Date the asset was installed
+  """
   installedDate: String!
 
-  """State of the asset"""
+  """
+  State of the asset
+  """
   state: String!
 }
 
@@ -146,23 +177,41 @@ input CreateCategoryInput {
 }
 
 input CreateAssignmentInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  assetCode: String!
+  assetName: String!
+  assignedToId: Int!
+  assignedToUsername: String!
+  assignedById: Int!
+  state: String!
+  assignedDate: String!
+  note: String!
+  assetId: Int!
 }
 
 input UpdateAssignmentInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  assetCode: String
+  assetName: String
+  assignedToId: Int
+  assignedToUsername: String
+  assignedById: Int
+  state: String
+  assignedDate: String
+  note: String
+  assetId: Int
   id: Int!
 }
 
 input CreateRequestReturnInput {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int!
 }
 
 input UpdateRequestReturnInput {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int
   id: Int!
 }
