@@ -3,36 +3,75 @@ import { AssetsResolver } from './assets.resolver';
 import { AssetsService } from './assets.service';
 import { CategoriesService } from '../categories/categories.service';
 import { CreateAssetInput } from './dto/create-asset.input';
-import { UpdateAssetInput } from './dto/update-asset.input';
-import { USER_TYPE, LOCATION, ASSET_STATE } from 'src/shared/enums';
+import { Asset } from './entities/asset.entity';
+import { FindAssetsInput } from './dto/find-assets.input';
+import { FindAssetsOutput } from './dto/find-assets.output';
+import {
+  USER_TYPE,
+  LOCATION,
+  ASSET_STATE,
+  USER_FIRST_LOGIN,
+} from 'src/shared/enums';
 import { CurrentUserInterface } from 'src/shared/generics';
-
 import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
+
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 
 describe('AssetsResolver', () => {
   let resolver: AssetsResolver;
   let assetsService: AssetsService;
   let categoriesService: CategoriesService;
 
-  const mockAssetsService = {
-    create: jest.fn(),
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
+  const mockCurrentUser: CurrentUserInterface = {
+    id: 1,
+    username: 'testuser',
+    type: USER_TYPE.ADMIN,
+    location: LOCATION.HCM,
+    firstName: 'Test',
+    lastName: 'User',
+    staffCode: 'STF001',
+    state: USER_FIRST_LOGIN.FALSE,
+    joinedDate: '2021-01-01',
   };
 
-  const mockCategoriesService = {
-    findById: jest.fn(),
+  const mockAsset: Asset = {
+    id: 1,
+    assetCode: 'CAT000001',
+    assetName: 'Asset 1',
+    categoryId: 1,
+    installedDate: new Date('2021-01-01').toISOString(),
+    state: ASSET_STATE.AVAILABLE,
+    location: LOCATION.HCM,
+    specification: 'Spec',
+  };
+
+  const mockFindAssetsOutput: FindAssetsOutput = {
+    assets: [mockAsset],
+    page: 1,
+    limit: 10,
+    total: 1,
+    totalPages: 1,
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AssetsResolver,
-        { provide: AssetsService, useValue: mockAssetsService },
-        { provide: CategoriesService, useValue: mockCategoriesService },
+        {
+          provide: AssetsService,
+          useValue: {
+            create: jest.fn().mockResolvedValue(mockAsset),
+            findAssets: jest.fn().mockResolvedValue(mockFindAssetsOutput),
+            findOne: jest.fn().mockResolvedValue(mockAsset),
+          },
+        },
+        {
+          provide: CategoriesService,
+          useValue: {},
+        },
       ],
     }).compile();
 
@@ -46,146 +85,56 @@ describe('AssetsResolver', () => {
   });
 
   describe('createAsset', () => {
-    it('should create a new asset', async () => {
+    it('should create an asset', async () => {
       const createAssetInput: CreateAssetInput = {
-        assetName: 'Asset1',
+        assetName: 'Asset 1',
         categoryId: 1,
-        installedDate: '2023-01-01',
+        installedDate: '2021-01-01',
         state: ASSET_STATE.AVAILABLE,
-        specification: '',
-      };
-      const userReq: CurrentUserInterface = {
-        id: 1,
-        location: LOCATION.HCM,
-        type: USER_TYPE.ADMIN,
-        firstName: '',
-        staffCode: '',
-        lastName: '',
-        state: false,
-        username: '',
-        joinedDate: '',
+        specification: 'Spec',
       };
 
-      const asset = {
-        id: 1,
-        ...createAssetInput,
-        assetCode: 'ABC123',
-        location: userReq.location,
-        specification: 'Some specification',
-        state: ASSET_STATE.AVAILABLE,
-      };
-      mockAssetsService.create.mockResolvedValue(asset);
-
-      const result = await resolver.createAsset(createAssetInput, userReq);
-      expect(result).toEqual(asset);
+      const result = await resolver.createAsset(
+        createAssetInput,
+        mockCurrentUser,
+      );
+      expect(result).toEqual(mockAsset);
       expect(assetsService.create).toHaveBeenCalledWith(
         createAssetInput,
-        userReq.location,
+        mockCurrentUser.location,
       );
     });
   });
 
-  describe('findAll', () => {
-    it('should return an array of assets', async () => {
-      const assets = [
-        {
-          id: 1,
-          assetName: 'Asset1',
-          categoryId: 1,
-          installedDate: '2023-01-01',
-          state: ASSET_STATE.AVAILABLE,
-        },
-      ];
-      mockAssetsService.findAll.mockResolvedValue(assets);
+  describe('getAssets', () => {
+    it('should find assets', async () => {
+      const findAssetsInput: FindAssetsInput = {
+        page: 1,
+        limit: 10,
+        query: 'Asset',
+        sortField: 'assetCode',
+        sortOrder: 'asc',
+        stateFilter: 'AVAILABLE',
+        categoryFilter: 1,
+      };
 
-      const result = await resolver.findAll();
-      expect(result).toEqual(assets);
-      expect(assetsService.findAll).toHaveBeenCalled();
+      const result = await resolver.getAssets(mockCurrentUser, findAssetsInput);
+      expect(result).toEqual(mockFindAssetsOutput);
+      expect(assetsService.findAssets).toHaveBeenCalledWith(
+        findAssetsInput,
+        mockCurrentUser.location,
+      );
     });
   });
 
   describe('findOne', () => {
-    it('should return a single asset', async () => {
-      const asset = {
-        id: 1,
-        assetName: 'Asset1',
-        categoryId: 1,
-        installedDate: '2023-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        assetCode: 'ABC123',
-        location: LOCATION.HCM,
-        specification: 'Some specification',
-      };
-      mockAssetsService.findOne.mockResolvedValue(asset);
-
-      const result = await resolver.findOne(1);
-      expect(result).toEqual(asset);
-      expect(assetsService.findOne).toHaveBeenCalledWith(1);
-    });
-  });
-
-  describe('updateAsset', () => {
-    it('should update an asset', async () => {
-      const updateAssetInput: UpdateAssetInput = {
-        id: 1,
-        assetName: 'Updated Asset',
-      };
-      const asset = {
-        id: 1,
-        ...updateAssetInput,
-        categoryId: 1,
-        installedDate: '2023-01-01',
-        state: ASSET_STATE.AVAILABLE,
-      };
-      mockAssetsService.update.mockResolvedValue(asset);
-
-      const result = await resolver.updateAsset(updateAssetInput);
-      expect(result).toEqual(asset);
-      expect(assetsService.update).toHaveBeenCalledWith(
-        updateAssetInput.id,
-        updateAssetInput,
+    it('should find one asset', async () => {
+      const result = await resolver.findOne(mockCurrentUser, 1);
+      expect(result).toEqual(mockAsset);
+      expect(assetsService.findOne).toHaveBeenCalledWith(
+        1,
+        mockCurrentUser.location,
       );
-    });
-  });
-
-  describe('removeAsset', () => {
-    it('should remove an asset', async () => {
-      const asset = {
-        id: 1,
-        assetName: 'Asset1',
-        categoryId: 1,
-        installedDate: '2023-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        assetCode: 'ABC123',
-        location: LOCATION.HCM,
-        specification: 'Some specification',
-      };
-      mockAssetsService.remove.mockResolvedValue(asset);
-
-      const result = await resolver.removeAsset(1);
-      expect(result).toEqual(asset);
-      expect(assetsService.remove).toHaveBeenCalledWith(1);
-    });
-  });
-
-  describe('category', () => {
-    it('should return the category of the asset', async () => {
-      const category = { id: 1, categoryName: 'Category1' };
-      mockCategoriesService.findById.mockResolvedValue(category);
-
-      const asset = {
-        id: 1,
-        assetName: 'Asset1',
-        categoryId: 1,
-        installedDate: '2023-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        assetCode: 'ABC123',
-        location: LOCATION.HCM,
-        specification: 'Some specification',
-      };
-      const result = await resolver.category(asset);
-      expect(result).toEqual(category);
-      expect(categoriesService.findById).toHaveBeenCalledWith(asset.categoryId);
     });
   });
 });

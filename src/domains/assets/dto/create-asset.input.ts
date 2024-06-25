@@ -1,4 +1,4 @@
-import { InputType, Int, Field, ID } from '@nestjs/graphql';
+import { InputType, Int, Field } from '@nestjs/graphql';
 import { ASSET_STATE } from '@prisma/client';
 import { IsDateString, IsEnum } from 'class-validator';
 
@@ -16,7 +16,7 @@ export class CreateAssetInput {
   })
   specification: string;
 
-  @Field({ description: 'Date the asset was installed' })
+  @Field(() => String, { description: 'Date the asset was installed' })
   @IsDateString()
   installedDate: string;
 

@@ -5,12 +5,11 @@ import {
   MyBadRequestException,
   MyEntityNotFoundException,
 } from 'src/shared/exceptions';
-import { ENTITY_NAME } from 'src/shared/constants';
 import { CreateCategoryInput } from './dto/create-category.input';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
-  let prismaService: PrismaService;
+  // let prismaService: PrismaService;
 
   const mockPrismaService = {
     category: {
@@ -30,7 +29,7 @@ describe('CategoriesService', () => {
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    // prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
