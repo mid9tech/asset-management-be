@@ -1,26 +1,31 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { ASSET_STATE } from 'src/shared/enums';
+import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
+import { ASSET_STATE } from '@prisma/client';
+import { IsEnum } from 'class-validator';
 
 @ObjectType()
 export class Asset {
-  @Field(() => Int)
+  @Field(() => ID)
   id: number;
 
-  @Field()
+  @Field(() => String)
   assetCode: string;
 
-  @Field()
+  @Field(() => String)
   assetName: string;
 
-  @Field()
+  @Field(() => Int)
   categoryId: number;
 
-  @Field()
+  @Field(() => String)
   installedDate: string;
 
-  @Field()
-  state: ASSET_STATE;
+  @Field(() => String)
+  @IsEnum(ASSET_STATE)
+  state: string;
 
-  @Field()
+  @Field(() => String)
   location: string;
+
+  @Field(() => String, { nullable: true })
+  specification: string;
 }

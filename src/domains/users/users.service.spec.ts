@@ -8,6 +8,7 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import PrismaServiceMock from 'src/services/prisma/__mocks__/mock-prisma.service';
 import { userDataMock, userInputMock } from 'src/shared/__mocks__';
 import { MyBadRequestException } from 'src/shared/exceptions';
+import { LOCATION } from 'src/shared/enums';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -169,7 +170,7 @@ describe('UsersService', () => {
 
   describe('findOne', () => {
     it('should find user by id', async () => {
-      const result = await usersService.findOne(1);
+      const result = await usersService.findOne(1, LOCATION.HCM);
       expect(result).toEqual(userDataMock);
     });
 
@@ -178,7 +179,7 @@ describe('UsersService', () => {
       (prismaServiceMock.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       try {
-        await usersService.findOne(999); // Providing an id that does not exist
+        await usersService.findOne(999, LOCATION.HCM); // Providing an id that does not exist
         // If findOne does not throw, fail the test
         fail('Expected MyEntityNotFoundException to be thrown');
       } catch (error) {

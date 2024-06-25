@@ -25,13 +25,28 @@ type FindUsersOutput {
 }
 
 type Asset {
-  id: Int!
+  id: ID!
   assetCode: String!
   assetName: String!
-  categoryId: Float!
+  categoryId: Int!
   installedDate: String!
   state: String!
   location: String!
+  specification: String
+}
+
+type FindAssetsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  assets: [Asset!]!
+}
+
+type Category {
+  id: ID!
+  categoryName: String!
+  categoryCode: String!
 }
 
 type Assignment {
@@ -55,16 +70,19 @@ type FindAssignmentsOutput {
 }
 
 type RequestReturn {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int!
 }
 
 type Query {
   findUsers(request: FindUsersInput!): FindUsersOutput!
   user(id: Int!): User!
-  assets: [Asset!]!
-  asset(id: Int!): Asset!
-  findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
+  findAssets(request: FindAssetsInput!): FindAssetsOutput!
+  findOneAsset(id: Int!): Asset!
+  getCategories: [Category!]!
+  assignments: [Assignment!]!
   assignment(id: Int!): Assignment!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
@@ -79,13 +97,14 @@ input FindUsersInput {
   sort: String = "firstName"
 }
 
-input FindAssignmentsInput {
+input FindAssetsInput {
   page: Int = 1
   limit: Int = 20
   query: String
   sortOrder: String = "asc"
-  state: String
-  sort: String = "assetName"
+  sortField: String = "assetCode"
+  stateFilter: String
+  categoryFilter: Int
 }
 
 type Mutation {
@@ -94,13 +113,16 @@ type Mutation {
   disableUser(id: Int!): Boolean!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
-  updateAsset(updateAssetInput: UpdateAssetInput!): Asset!
-  removeAsset(id: Int!): Asset!
+  createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
   removeAssignment(id: Int!): Assignment!
-  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
-  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
+  createRequestReturn(
+    createRequestReturnInput: CreateRequestReturnInput!
+  ): RequestReturn!
+  updateRequestReturn(
+    updateRequestReturnInput: UpdateRequestReturnInput!
+  ): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
 }
 
@@ -123,14 +145,35 @@ input UpdateUserInput {
 }
 
 input CreateAssetInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """
+  Name of the asset
+  """
+  assetName: String!
+
+  """
+  ID of the category
+  """
+  categoryId: Int!
+
+  """
+  Specification of the asset
+  """
+  specification: String
+
+  """
+  Date the asset was installed
+  """
+  installedDate: String!
+
+  """
+  State of the asset
+  """
+  state: String!
 }
 
-input UpdateAssetInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+input CreateCategoryInput {
+  categoryName: String!
+  categoryCode: String!
 }
 
 input CreateAssignmentInput {
@@ -159,12 +202,16 @@ input UpdateAssignmentInput {
 }
 
 input CreateRequestReturnInput {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int!
 }
 
 input UpdateRequestReturnInput {
-  """Example field (placeholder)"""
+  """
+  Example field (placeholder)
+  """
   exampleField: Int
   id: Int!
 }

@@ -5,7 +5,9 @@ export async function generateStaffCode(client: PrismaClient) {
   const lastUser = await client.user.findFirst({
     orderBy: { id: 'desc' },
   });
-  const lastId = lastUser ? lastUser.id : 0;
+
+  const stringId = lastUser?.staffCode.slice(-4);
+  const lastId = lastUser ? parseInt(stringId) : 0;
   const newId = lastId + 1;
   const newStaffCode = `SD${newId.toString().padStart(4, '0')}`;
   return newStaffCode;

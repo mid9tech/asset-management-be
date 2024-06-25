@@ -33,7 +33,10 @@ export class UsersResolver {
     @Args('request') request: FindUsersInput,
   ) {
     try {
-      const user = await this.usersService.findOne(userReq.id);
+      const user = await this.usersService.findOne(
+        userReq.id,
+        userReq.location,
+      );
       if (user) {
         const result = await this.usersService.findAll(request, user);
         return result;
@@ -42,11 +45,16 @@ export class UsersResolver {
       return error;
     }
   }
-
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    const location = userReq.location;
     try {
-      return this.usersService.findOne(id);
+      return this.usersService.findOne(id, location);
     } catch (error) {
       return error;
     }
