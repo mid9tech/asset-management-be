@@ -10,6 +10,7 @@ import { RequestReturnsModule } from './domains/request-returns/request-returns.
 import { FormatError } from './shared/helpers';
 import { PrismaModule } from './services/prisma/prisma.module';
 import { AuthModule } from './domains/auth/auth.module';
+import { CategoriesModule } from './domains/categories/categories.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { AuthModule } from './domains/auth/auth.module';
     AssignmentsModule,
     RequestReturnsModule,
     AuthModule,
+    CategoriesModule,
   ],
   controllers: [],
   providers: [],

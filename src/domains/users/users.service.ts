@@ -160,10 +160,11 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number): Promise<User | null> {
+  async findOne(id: number, location: LOCATION): Promise<User | null> {
     const user = await this.prismaService.user.findFirst({
       where: {
         id: id,
+        location: location as $Enums.LOCATION,
       },
     });
     if (!user) {

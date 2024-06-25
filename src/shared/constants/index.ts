@@ -10,6 +10,7 @@ export const ENTITY_NAME = {
   ASSIGNMENT: 'Assignment',
   REQUEST_RETURN: 'Request Return',
   ASSET: 'Asset',
+  CATEGORY: 'Category',
 };
 
 export const PORT = process.env.PORT || 8080;
