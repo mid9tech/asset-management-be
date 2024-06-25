@@ -160,12 +160,14 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number, location: LOCATION): Promise<User | null> {
+  async findOne(id: number, location?: LOCATION): Promise<User | null> {
+    const where: Prisma.UserWhereInput = {};
+    if (location) {
+      where.location = location as $Enums.LOCATION;
+    }
+    where.id = id;
     const user = await this.prismaService.user.findFirst({
-      where: {
-        id: id,
-        location: location as $Enums.LOCATION,
-      },
+      where,
     });
     if (!user) {
       throw new MyEntityNotFoundException(ENTITY_NAME.USER);
