@@ -15,16 +15,10 @@ export class CreateAssignmentInput {
   @Field()
   assignedToUsername: string;
 
-  @Field(() => Int)
-  assignedById: number;
-
-  @Field()
-  state: ASSIGNMENT_STATE;
-
   @Field()
   assignedDate: string;
 
-  @Field()
+  @Field({ nullable: true })
   note: string;
 
   @Field(() => Int)

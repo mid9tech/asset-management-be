@@ -24,7 +24,7 @@ export class Assignment {
   @Field()
   state: ASSIGNMENT_STATE;
 
-  @Field()
+  @Field({ nullable: true })
   note: string;
 
   @Field()
