@@ -44,11 +44,16 @@ export class AssignmentsResolver {
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(() => FindAssignmentsOutput, { name: 'findAssignments' })
-  findAll(
+  async findAll(
     @Args('findAssignmentsInput') findAssignmentsInput: FindAssignmentsInput,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
-    return this.assignmentsService.findAll(findAssignmentsInput, userReq);
+    const result = await this.assignmentsService.findAll(
+      findAssignmentsInput,
+      userReq,
+    );
+    console.log('result', result);
+    return result;
   }
 
   @ResolveField(() => User, { name: 'assigner' })
