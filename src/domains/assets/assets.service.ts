@@ -109,6 +109,9 @@ export class AssetsService {
       categoryFilter,
     } = request;
 
+    const stateFilterArray = stateFilter ? stateFilter.split(',') : [];
+    const categoryFilterArray = categoryFilter ? categoryFilter.split(',') : [];
+
     const where: Prisma.AssetWhereInput = {};
 
     if (query) {
@@ -124,11 +127,10 @@ export class AssetsService {
     const orderBy = { [sortField]: sortOrder };
 
     if (stateFilter) {
-      where.state = ASSET_STATE[stateFilter];
+      where.state = { in: stateFilterArray.map((state) => ASSET_STATE[state]) };
     }
-
     if (categoryFilter) {
-      where.categoryId = categoryFilter;
+      where.categoryId = { in: categoryFilterArray.map((id) => parseInt(id)) };
     }
 
     try {
