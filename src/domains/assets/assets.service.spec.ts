@@ -69,6 +69,7 @@ describe('AssetsService', () => {
         specification: createAssetInput.specification,
         createdAt: new Date(),
         updatedAt: new Date(),
+        isRemoved: false,
       });
 
       const result = await service.create(createAssetInput, LOCATION.HCM);
@@ -81,6 +82,7 @@ describe('AssetsService', () => {
         state: ASSET_STATE[createAssetInput.state],
         updatedAt: expect.any(Date),
         createdAt: expect.any(Date),
+        isRemoved: false,
       });
     });
 
