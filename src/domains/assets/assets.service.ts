@@ -7,6 +7,7 @@ import { CategoriesService } from '../categories/categories.service';
 import { FindAssetsInput } from './dto/find-assets.input';
 import { Prisma } from '@prisma/client';
 import { FindAssetsOutput } from './dto/find-assets.output';
+import { UpdateAssetInput } from './dto/update-asset.input';
 
 @Injectable()
 export class AssetsService {
@@ -48,6 +49,55 @@ export class AssetsService {
     return result;
   }
 
+  async update(
+    id: number,
+    updateAssetInput: UpdateAssetInput,
+    location: LOCATION,
+  ) {
+    const asset = await this.prismaService.asset.findUnique({
+      where: { id },
+    });
+    if (!asset) {
+      throw new MyBadRequestException('Asset not found');
+    }
+    if (asset.location !== location) {
+      throw new MyBadRequestException('Asset not found in your location');
+    }
+    if (updateAssetInput.installedDate === '') {
+      throw new MyBadRequestException('Installed date is invalid');
+    }
+    if (updateAssetInput.state === '') {
+      throw new MyBadRequestException('State is invalid');
+    }
+    if (updateAssetInput.assetName === '') {
+      throw new MyBadRequestException('Asset name is invalid');
+    }
+
+    if (
+      updateAssetInput.state === ASSET_STATE.ASSIGNED ||
+      asset.state === ASSET_STATE.ASSIGNED
+    ) {
+      throw new MyBadRequestException(
+        'Can not edit ! Asset is assigned to user',
+      );
+    }
+    const updateData = {
+      ...updateAssetInput,
+      installedDate: new Date(updateAssetInput.installedDate).toISOString(),
+      state: ASSET_STATE[updateAssetInput.state],
+      specification: updateAssetInput.specification || asset.specification,
+    };
+    const result = await this.prismaService.asset.update({
+      where: { id },
+      data: updateData,
+    });
+    const mappedResult = {
+      ...result,
+      installedDate: result.installedDate.toISOString(),
+    };
+    return mappedResult;
+  }
+
   async findAssets(request: FindAssetsInput, location: LOCATION) {
     const {
       page = 1,
@@ -58,6 +108,9 @@ export class AssetsService {
       stateFilter,
       categoryFilter,
     } = request;
+
+    const stateFilterArray = stateFilter ? stateFilter.split(',') : [];
+    const categoryFilterArray = categoryFilter ? categoryFilter.split(',') : [];
 
     const where: Prisma.AssetWhereInput = {};
 
@@ -72,13 +125,12 @@ export class AssetsService {
       where.location = location;
     }
     const orderBy = { [sortField]: sortOrder };
-    console.log(ASSET_STATE[stateFilter]);
-    if (stateFilter) {
-      where.state = ASSET_STATE[stateFilter];
-    }
 
+    if (stateFilter) {
+      where.state = { in: stateFilterArray.map((state) => ASSET_STATE[state]) };
+    }
     if (categoryFilter) {
-      where.categoryId = categoryFilter;
+      where.categoryId = { in: categoryFilterArray.map((id) => parseInt(id)) };
     }
 
     try {
@@ -119,15 +171,20 @@ export class AssetsService {
     if (asset.location !== location) {
       throw new MyBadRequestException('Asset not found in your location');
     }
-    return asset;
+    const result = {
+      ...asset,
+      installedDate: asset.installedDate.toISOString(),
+    };
+    return result;
   }
 
   async generateAssetCode(categoryId: number) {
     const prefix = await this.categoryService.getPrefixById(categoryId);
-    const lastAsset = await this.prismaService.asset.count({
-      where: { categoryId: categoryId },
+    const lastAsset = await this.prismaService.asset.findFirst({
+      orderBy: { id: 'desc' },
     });
-    const newId = lastAsset ? lastAsset + 1 : 1;
+    const stringId = lastAsset?.assetCode.slice(-6);
+    const newId = lastAsset ? parseInt(stringId) + 1 : 1;
     const assetCode = `${prefix}${newId.toString().padStart(6, '0')}`;
     return assetCode;
   }

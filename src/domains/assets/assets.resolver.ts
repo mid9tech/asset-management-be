@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { AssetsService } from './assets.service';
 import { Asset } from './entities/asset.entity';
 import { CreateAssetInput } from './dto/create-asset.input';
@@ -13,6 +21,8 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 import { CategoriesService } from '../categories/categories.service';
 import { FindAssetsInput } from './dto/find-assets.input';
 import { FindAssetsOutput } from './dto/find-assets.output';
+import { Category } from '../categories/entities/category.entity';
+import { UpdateAssetInput } from './dto/update-asset.input';
 
 @Resolver(() => Asset)
 export class AssetsResolver {
@@ -28,6 +38,17 @@ export class AssetsResolver {
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return this.assetsService.create(createAssetInput, userReq.location);
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(() => Asset)
+  updateAsset(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('updateAssetInput') updateAssetInput: UpdateAssetInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assetsService.update(id, updateAssetInput, userReq.location);
   }
 
   @Roles(USER_TYPE.ADMIN)
@@ -50,5 +71,10 @@ export class AssetsResolver {
   ) {
     const location = userReq.location;
     return this.assetsService.findOne(id, location);
+  }
+
+  @ResolveField(() => Category)
+  category(@Parent() asset: Asset) {
+    return this.categoryService.findById(asset.categoryId);
   }
 }
