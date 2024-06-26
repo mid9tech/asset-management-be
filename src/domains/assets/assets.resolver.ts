@@ -22,6 +22,7 @@ import { CategoriesService } from '../categories/categories.service';
 import { FindAssetsInput } from './dto/find-assets.input';
 import { FindAssetsOutput } from './dto/find-assets.output';
 import { Category } from '../categories/entities/category.entity';
+import { UpdateAssetInput } from './dto/update-asset.input';
 
 @Resolver(() => Asset)
 export class AssetsResolver {
@@ -37,6 +38,17 @@ export class AssetsResolver {
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return this.assetsService.create(createAssetInput, userReq.location);
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(() => Asset)
+  updateAsset(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('updateAssetInput') updateAssetInput: UpdateAssetInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assetsService.update(id, updateAssetInput, userReq.location);
   }
 
   @Roles(USER_TYPE.ADMIN)

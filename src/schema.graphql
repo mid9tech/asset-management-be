@@ -121,6 +121,7 @@ type Mutation {
   disableUser(id: Int!): Boolean!
   removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
+  updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
@@ -154,6 +155,20 @@ input CreateAssetInput {
 
   """ID of the category"""
   categoryId: Int!
+
+  """Specification of the asset"""
+  specification: String
+
+  """Date the asset was installed"""
+  installedDate: String!
+
+  """State of the asset"""
+  state: String!
+}
+
+input UpdateAssetInput {
+  """Name of the asset"""
+  assetName: String!
 
   """Specification of the asset"""
   specification: String
