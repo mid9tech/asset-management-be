@@ -57,7 +57,7 @@ type Assignment {
   assigner: User!
   assignee: User!
   state: String!
-  note: String!
+  note: String
   assignedDate: String!
   assetId: Int!
 }
@@ -190,10 +190,8 @@ input CreateAssignmentInput {
   assetName: String!
   assignedToId: Int!
   assignedToUsername: String!
-  assignedById: Int!
-  state: String!
   assignedDate: String!
-  note: String!
+  note: String
   assetId: Int!
 }
 
@@ -202,8 +200,6 @@ input UpdateAssignmentInput {
   assetName: String
   assignedToId: Int
   assignedToUsername: String
-  assignedById: Int
-  state: String
   assignedDate: String
   note: String
   assetId: Int

@@ -90,7 +90,7 @@ export class AssignmentsService {
 
     try {
       const total = await this.prismaService.assignment.count({ where });
-      const assignment = await this.prismaService.assignment.findMany({
+      const assignments = await this.prismaService.assignment.findMany({
         where,
         skip: (page - 1) * limit,
         take: limit,
@@ -104,7 +104,7 @@ export class AssignmentsService {
         limit: limit,
         total: total,
         totalPages: totalPages,
-        assignments: assignment,
+        assignments: assignments,
       };
     } catch (error) {
       throw error;
@@ -112,11 +112,13 @@ export class AssignmentsService {
   }
 
   async findOne(id: number) {
-    return await this.prismaService.assignment.findUnique({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      return await this.prismaService.assignment.findFirst({
+        where: { id: id },
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   update(id: number, updateAssignmentInput: UpdateAssignmentInput) {
