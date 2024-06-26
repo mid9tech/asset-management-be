@@ -376,7 +376,7 @@ describe('AssetsService', () => {
         sortField: 'assetCode',
         sortOrder: 'asc',
         stateFilter: 'AVAILABLE',
-        categoryFilter: 1,
+        categoryFilter: '1',
       };
 
       const assets = [
@@ -387,7 +387,7 @@ describe('AssetsService', () => {
           location: LOCATION.HCM,
           state: ASSET_STATE.AVAILABLE,
           installedDate: new Date('2021-01-01'),
-          categoryId: 1,
+          categoryId: '1',
           specification: 'Spec',
           createdAt: new Date(),
           updatedAt: new Date(),

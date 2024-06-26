@@ -109,7 +109,7 @@ describe('AssetsResolver', () => {
         sortField: 'assetCode',
         sortOrder: 'asc',
         stateFilter: 'AVAILABLE',
-        categoryFilter: 1,
+        categoryFilter: '1',
       };
 
       const result = await resolver.getAssets(mockCurrentUser, findAssetsInput);

@@ -103,7 +103,7 @@ input FindAssetsInput {
   sortOrder: String = "asc"
   sortField: String = "assetCode"
   stateFilter: String
-  categoryFilter: Int
+  categoryFilter: String
 }
 
 input FindAssignmentsInput {
