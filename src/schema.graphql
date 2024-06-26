@@ -33,6 +33,7 @@ type Asset {
   state: String!
   location: String!
   specification: String
+  category: Category!
 }
 
 type FindAssetsOutput {
@@ -70,9 +71,7 @@ type FindAssignmentsOutput {
 }
 
 type RequestReturn {
-  """
-  Example field (placeholder)
-  """
+  """Example field (placeholder)"""
   exampleField: Int!
 }
 
@@ -82,7 +81,7 @@ type Query {
   findAssets(request: FindAssetsInput!): FindAssetsOutput!
   findOneAsset(id: Int!): Asset!
   getCategories: [Category!]!
-  assignments: [Assignment!]!
+  findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
@@ -107,6 +106,15 @@ input FindAssetsInput {
   categoryFilter: Int
 }
 
+input FindAssignmentsInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  state: String
+  sort: String = "assetName"
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
@@ -117,12 +125,8 @@ type Mutation {
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
   removeAssignment(id: Int!): Assignment!
-  createRequestReturn(
-    createRequestReturnInput: CreateRequestReturnInput!
-  ): RequestReturn!
-  updateRequestReturn(
-    updateRequestReturnInput: UpdateRequestReturnInput!
-  ): RequestReturn!
+  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
+  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
 }
 
@@ -145,29 +149,19 @@ input UpdateUserInput {
 }
 
 input CreateAssetInput {
-  """
-  Name of the asset
-  """
+  """Name of the asset"""
   assetName: String!
 
-  """
-  ID of the category
-  """
+  """ID of the category"""
   categoryId: Int!
 
-  """
-  Specification of the asset
-  """
+  """Specification of the asset"""
   specification: String
 
-  """
-  Date the asset was installed
-  """
+  """Date the asset was installed"""
   installedDate: String!
 
-  """
-  State of the asset
-  """
+  """State of the asset"""
   state: String!
 }
 
@@ -202,16 +196,12 @@ input UpdateAssignmentInput {
 }
 
 input CreateRequestReturnInput {
-  """
-  Example field (placeholder)
-  """
+  """Example field (placeholder)"""
   exampleField: Int!
 }
 
 input UpdateRequestReturnInput {
-  """
-  Example field (placeholder)
-  """
+  """Example field (placeholder)"""
   exampleField: Int
   id: Int!
 }
