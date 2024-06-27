@@ -126,8 +126,6 @@ type Mutation {
   updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
-  updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
-  removeAssignment(id: Int!): Assignment!
   createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
   updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
@@ -195,17 +193,6 @@ input CreateAssignmentInput {
   assignedDate: String!
   note: String
   assetId: Int!
-}
-
-input UpdateAssignmentInput {
-  assetCode: String
-  assetName: String
-  assignedToId: Int
-  assignedToUsername: String
-  assignedDate: String
-  note: String
-  assetId: Int
-  id: Int!
 }
 
 input CreateRequestReturnInput {

@@ -137,7 +137,7 @@ export class UsersService {
 
     const total = await this.prismaService.user.count({ where });
     const users = await this.prismaService.user.findMany({
-      where,
+      where: { ...where, isDisabled: false },
       skip: (page - 1) * limit,
       take: limit,
       orderBy,
@@ -235,6 +235,16 @@ export class UsersService {
   }
 
   async disableUser(id: number) {
+    const isAlreadyHadAssigned = await this.prismaService.user.findFirst({
+      where: { id: id, isAssigned: true },
+    });
+
+    if (id && isAlreadyHadAssigned) {
+      throw new MyBadRequestException(
+        'There are valid assignments belonging to this user. Please close all assignments before disabling user.',
+      );
+    }
+
     const result = await this.prismaService.user.update({
       where: { id },
       data: {

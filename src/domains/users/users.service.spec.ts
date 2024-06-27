@@ -140,9 +140,17 @@ describe('UsersService', () => {
   });
 
   // Additional existing test cases
-  it('should disable a user', async () => {
-    const result = await usersService.disableUser(1);
-    expect(result).toBe(true);
+  describe('Disable User', () => {
+    it('should not disable a user, return MyBadRequestException', async () => {
+      await expect(usersService.disableUser(1)).rejects.toThrowError(
+        MyBadRequestException,
+      );
+    });
+
+    it('should disable a user', async () => {
+      const result = await usersService.disableUser(null);
+      expect(result).toBe(true);
+    });
   });
 
   // Additional existing test cases
