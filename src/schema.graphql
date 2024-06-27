@@ -92,7 +92,7 @@ input FindUsersInput {
   limit: Int = 20
   query: String
   sortOrder: String = "asc"
-  type: String
+  type: [String!]
   sort: String = "firstName"
 }
 

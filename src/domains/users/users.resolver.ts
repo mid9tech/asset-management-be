@@ -32,6 +32,7 @@ export class UsersResolver {
     @CurrentUser() userReq: User,
     @Args('request') request: FindUsersInput,
   ) {
+    console.log(request);
     try {
       const user = await this.usersService.findOne(
         userReq.id,

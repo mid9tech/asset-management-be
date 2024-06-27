@@ -101,16 +101,29 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {};
 
-    if (type) {
-      where.type = type as $Enums.USER_TYPE; // Map to Prisma enum
+    if (type && type.length > 0) {
+      where.type = { in: type };
     }
-
     if (query) {
+      const trimmedQuery = query.trim();
+      const words = trimmedQuery.split(' ').filter((word) => word.length > 0);
+
       where.OR = [
-        { firstName: { contains: query, mode: 'insensitive' } },
-        { lastName: { contains: query, mode: 'insensitive' } },
-        { staffCode: { contains: query, mode: 'insensitive' } },
+        { firstName: { contains: trimmedQuery, mode: 'insensitive' } },
+        { lastName: { contains: trimmedQuery, mode: 'insensitive' } },
+        { staffCode: { contains: trimmedQuery, mode: 'insensitive' } },
       ];
+
+      if (words.length > 1) {
+        where.OR.push({
+          AND: words.map((word) => ({
+            OR: [
+              { firstName: { contains: word, mode: 'insensitive' } },
+              { lastName: { contains: word, mode: 'insensitive' } },
+            ],
+          })),
+        });
+      }
     }
     if (user) {
       where.location = user.location as $Enums.LOCATION; // Map to Prisma enum
@@ -140,13 +153,13 @@ export class UsersService {
         staffCode: user.staffCode,
         username: user.username,
         password: user.password,
-        gender: user.gender as GENDER, // Map to application enum
+        state: user.state,
         salt: user.salt,
         refreshToken: user.refreshToken,
+        gender: user.gender as GENDER, // Map to application enum
         joinedDate: user.joinedDate.toString(),
         type: user.type as USER_TYPE, // Map to application enum
         dateOfBirth: user.dateOfBirth.toString(),
-        state: user.state,
         location: user.location as LOCATION, // Map to application enum
       }));
       result.page = page;
