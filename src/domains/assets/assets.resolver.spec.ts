@@ -80,6 +80,15 @@ describe('AssetsResolver', () => {
                 ) {
                   throw new MyBadRequestException('Invalid input');
                 }
+                if (!id) {
+                  throw new MyBadRequestException('Invalid id');
+                }
+                if (!location) {
+                  throw new MyBadRequestException('Invalid location');
+                }
+                if (location !== mockAsset.location) {
+                  throw new MyBadRequestException('Invalid location');
+                }
                 return Promise.resolve(mockAsset);
               }),
           },
