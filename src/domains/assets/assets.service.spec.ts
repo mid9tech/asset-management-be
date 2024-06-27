@@ -375,8 +375,8 @@ describe('AssetsService', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: 'AVAILABLE',
-        categoryFilter: '1',
+        stateFilter: ['AVAILABLE'],
+        categoryFilter: ['1'],
       };
 
       const assets = [
