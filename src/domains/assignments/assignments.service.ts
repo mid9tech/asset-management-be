@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAssignmentInput } from './dto/create-assignment.input';
-import { UpdateAssignmentInput } from './dto/update-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { ASSET_STATE, ASSIGNMENT_STATE } from 'src/shared/enums';
@@ -29,7 +28,7 @@ export class AssignmentsService {
         },
       });
 
-      if (isAssetIsAssigned) {
+      if (createAssignmentInput.assetId && isAssetIsAssigned) {
         throw new MyBadRequestException(
           'Asset is already assigned for another user',
         );
@@ -43,7 +42,7 @@ export class AssignmentsService {
         },
       });
 
-      if (isUserAlreadyAssigned) {
+      if (createAssignmentInput.assignedToId && isUserAlreadyAssigned) {
         throw new MyBadRequestException('User is already assigned');
       }
 
@@ -108,50 +107,34 @@ export class AssignmentsService {
 
     const orderBy = { [sort]: sortOrder };
 
-    try {
-      const total = await this.prismaService.assignment.count({ where });
-      const assignments = await this.prismaService.assignment.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy,
-      });
+    const total = await this.prismaService.assignment.count({ where });
+    const assignments = await this.prismaService.assignment.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy,
+    });
 
-      const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-      return {
-        page: page,
-        limit: limit,
-        total: total,
-        totalPages: totalPages,
-        assignments: assignments ? assignments : [],
-      };
-    } catch (error) {
-      throw error;
-    }
+    return {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+      assignments: assignments ? assignments : [],
+    };
   }
 
   async findOne(id: number) {
-    try {
-      const result = await this.prismaService.assignment.findFirst({
-        where: { id: id },
-      });
+    const result = await this.prismaService.assignment.findFirst({
+      where: { id: id },
+    });
 
-      if (!result) {
-        throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
-      }
-
-      return result;
-    } catch (error) {
-      return error;
+    if (!result) {
+      throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
     }
-  }
 
-  update(id: number, updateAssignmentInput: UpdateAssignmentInput) {
-    return `This action updates a #${id} assignment: ${updateAssignmentInput}`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} assignment`;
+    return result;
   }
 }

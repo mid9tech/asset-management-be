@@ -122,7 +122,6 @@ type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
   disableUser(id: Int!): Boolean!
-  removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!

@@ -8,17 +8,18 @@ import {
   USER_FIRST_LOGIN,
   USER_STATUS,
   USER_TYPE,
-  GENDER,
 } from 'src/shared/enums';
 
 import { HashPW } from 'src/shared/helpers';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
+  MyForbiddenException,
 } from 'src/shared/exceptions';
-import { FindUsersInput, FindUsersOutput } from './dto/find-users.input';
-import { Prisma, User } from '@prisma/client';
+import { FindUsersInput } from './dto/find-users.input';
+import { Prisma } from '@prisma/client';
 import { ENTITY_NAME } from 'src/shared/constants';
+import { CurrentUserInterface } from 'src/shared/generics';
 
 @Injectable()
 export class UsersService {
@@ -53,15 +54,15 @@ export class UsersService {
       const ageAtJoinDate = this.calculateAge(dob, joinDate);
       const ageAtCurrentDate = this.calculateAge(dob, currentDate);
 
-      if (ageAtJoinDate < 18) {
-        throw new MyBadRequestException(
-          'User is under 18 at the join date. Please select a different join date.',
-        );
-      }
-
       if (ageAtCurrentDate < 18) {
         throw new MyBadRequestException(
           'User is under 18 currently. Please select a different date of birth.',
+        );
+      }
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
         );
       }
 
@@ -89,7 +90,7 @@ export class UsersService {
     }
   }
 
-  async findAll(input: FindUsersInput, user: User) {
+  async findAll(input: FindUsersInput, user: CurrentUserInterface) {
     const {
       page = 1,
       limit = 10,
@@ -134,46 +135,26 @@ export class UsersService {
 
     const orderBy = { [sort]: sortOrder };
 
-    try {
-      const total = await this.prismaService.user.count({ where });
-      const users = await this.prismaService.user.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy,
-      });
+    const total = await this.prismaService.user.count({ where });
+    const users = await this.prismaService.user.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy,
+    });
 
-      const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-      const result = new FindUsersOutput();
-      result.users = users.map((user) => ({
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        staffCode: user.staffCode,
-        username: user.username,
-        password: user.password,
-        state: user.state,
-        salt: user.salt,
-        refreshToken: user.refreshToken,
-        gender: user.gender as GENDER, // Map to application enum
-        joinedDate: user.joinedDate.toString(),
-        type: user.type as USER_TYPE, // Map to application enum
-        dateOfBirth: user.dateOfBirth.toString(),
-        location: user.location as LOCATION, // Map to application enum
-      }));
-      result.page = page;
-      result.limit = limit;
-      result.total = total;
-      result.totalPages = totalPages;
-      return result;
-    } catch (error) {
-      console.error('Error finding users:', error);
-      throw new Error('Error finding users');
-    }
+    return {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+      users: users ? users : [],
+    };
   }
 
-  async findOne(id: number, location?: LOCATION): Promise<User | null> {
+  async findOne(id: number, location?: LOCATION) {
     const where: Prisma.UserWhereInput = {};
     if (location) {
       where.location = location as $Enums.LOCATION;
@@ -192,6 +173,20 @@ export class UsersService {
     try {
       const { dateOfBirth, joinedDate } = updateUserInput;
 
+      const updatedUser = await this.prismaService.user.findFirst({
+        where: { id },
+      });
+
+      if (!updatedUser) {
+        throw new MyEntityNotFoundException(ENTITY_NAME.USER);
+      }
+
+      if (updatedUser.type === USER_TYPE.ADMIN) {
+        throw new MyForbiddenException(
+          'You are not had permission to edit admin!',
+        );
+      }
+
       if (dateOfBirth && isNaN(Date.parse(dateOfBirth))) {
         throw new MyBadRequestException('DOB is invalid');
       }
@@ -208,15 +203,15 @@ export class UsersService {
       const ageAtJoinDate = this.calculateAge(dob, joinDate);
       const ageAtCurrentDate = this.calculateAge(dob, currentDate);
 
-      if (ageAtJoinDate < 18) {
-        throw new MyBadRequestException(
-          'User is under 18 at the join date. Please select a different join date.',
-        );
-      }
-
       if (ageAtCurrentDate < 18) {
         throw new MyBadRequestException(
           'User is under 18 currently. Please select a different date of birth.',
+        );
+      }
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
         );
       }
 
@@ -240,18 +235,14 @@ export class UsersService {
   }
 
   async disableUser(id: number) {
-    try {
-      const result = await this.prismaService.user.update({
-        where: { id },
-        data: {
-          isDisabled: USER_STATUS.INACTIVE,
-        },
-      });
+    const result = await this.prismaService.user.update({
+      where: { id },
+      data: {
+        isDisabled: USER_STATUS.INACTIVE,
+      },
+    });
 
-      return result ? true : false;
-    } catch (error) {
-      throw error;
-    }
+    return result ? true : false;
   }
 
   updateRefreshToken(id: number, refreshToken: string) {
@@ -284,10 +275,6 @@ export class UsersService {
       where: { id },
       data: { password: newPassword },
     });
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 
   async getSalt(id: number) {

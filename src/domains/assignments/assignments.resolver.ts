@@ -10,7 +10,6 @@ import {
 import { AssignmentsService } from './assignments.service';
 import { Assignment } from './entities/assignment.entity';
 import { CreateAssignmentInput } from './dto/create-assignment.input';
-import { UpdateAssignmentInput } from './dto/update-assignment.input';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { USER_TYPE } from 'src/shared/enums';
 import { UseGuards } from '@nestjs/common';
@@ -52,7 +51,6 @@ export class AssignmentsResolver {
       findAssignmentsInput,
       userReq,
     );
-    console.log('result', result);
     return result;
   }
 
@@ -69,20 +67,5 @@ export class AssignmentsResolver {
   @Query(() => Assignment, { name: 'assignment' })
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.assignmentsService.findOne(id);
-  }
-
-  @Mutation(() => Assignment)
-  updateAssignment(
-    @Args('updateAssignmentInput') updateAssignmentInput: UpdateAssignmentInput,
-  ) {
-    return this.assignmentsService.update(
-      updateAssignmentInput.id,
-      updateAssignmentInput,
-    );
-  }
-
-  @Mutation(() => Assignment)
-  removeAssignment(@Args('id', { type: () => Int }) id: number) {
-    return this.assignmentsService.remove(id);
   }
 }
