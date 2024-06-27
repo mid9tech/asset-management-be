@@ -96,12 +96,25 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.resolver.{js,jsx,ts,tsx}",
+      "src/**/*.controller.{js,jsx,ts,tsx}",
+      "src/**/*.service.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/prisma.service.ts"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/src/$1"
-    }
+    },
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test-utils/",
+      "src/setupTests.js"
+    ]
   }
 }
