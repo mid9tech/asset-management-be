@@ -32,4 +32,10 @@ export class Assignment {
 
   @Field(() => Int)
   assetId: number;
+
+  @Field({ nullable: true })
+  assignedByUsername: string;
+
+  @Field({ nullable: true })
+  assignedToUsername: string;
 }

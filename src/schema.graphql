@@ -60,6 +60,8 @@ type Assignment {
   note: String
   assignedDate: String!
   assetId: Int!
+  assignedByUsername: String
+  assignedToUsername: String
 }
 
 type FindAssignmentsOutput {
