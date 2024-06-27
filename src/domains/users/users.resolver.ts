@@ -32,7 +32,6 @@ export class UsersResolver {
     @CurrentUser() userReq: CurrentUserInterface,
     @Args('request') request: FindUsersInput,
   ) {
-    console.log(request);
     try {
       const result = await this.usersService.findAll(request, userReq);
       return result;

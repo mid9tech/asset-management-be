@@ -54,15 +54,15 @@ export class UsersService {
       const ageAtJoinDate = this.calculateAge(dob, joinDate);
       const ageAtCurrentDate = this.calculateAge(dob, currentDate);
 
-      if (ageAtJoinDate < 18) {
-        throw new MyBadRequestException(
-          'User is under 18 at the join date. Please select a different join date.',
-        );
-      }
-
       if (ageAtCurrentDate < 18) {
         throw new MyBadRequestException(
           'User is under 18 currently. Please select a different date of birth.',
+        );
+      }
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
         );
       }
 
@@ -135,28 +135,23 @@ export class UsersService {
 
     const orderBy = { [sort]: sortOrder };
 
-    try {
-      const total = await this.prismaService.user.count({ where });
-      const users = await this.prismaService.user.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy,
-      });
+    const total = await this.prismaService.user.count({ where });
+    const users = await this.prismaService.user.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy,
+    });
 
-      const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-      return {
-        page: page,
-        limit: limit,
-        total: total,
-        totalPages: totalPages,
-        users: users ? users : [],
-      };
-    } catch (error) {
-      console.error('Error finding users:', error);
-      throw new Error('Error finding users');
-    }
+    return {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+      users: users ? users : [],
+    };
   }
 
   async findOne(id: number, location?: LOCATION) {
@@ -208,15 +203,15 @@ export class UsersService {
       const ageAtJoinDate = this.calculateAge(dob, joinDate);
       const ageAtCurrentDate = this.calculateAge(dob, currentDate);
 
-      if (ageAtJoinDate < 18) {
-        throw new MyBadRequestException(
-          'User is under 18 at the join date. Please select a different join date.',
-        );
-      }
-
       if (ageAtCurrentDate < 18) {
         throw new MyBadRequestException(
           'User is under 18 currently. Please select a different date of birth.',
+        );
+      }
+
+      if (ageAtJoinDate < 18) {
+        throw new MyBadRequestException(
+          'User is under 18 at the join date. Please select a different join date.',
         );
       }
 
@@ -240,18 +235,14 @@ export class UsersService {
   }
 
   async disableUser(id: number) {
-    try {
-      const result = await this.prismaService.user.update({
-        where: { id },
-        data: {
-          isDisabled: USER_STATUS.INACTIVE,
-        },
-      });
+    const result = await this.prismaService.user.update({
+      where: { id },
+      data: {
+        isDisabled: USER_STATUS.INACTIVE,
+      },
+    });
 
-      return result ? true : false;
-    } catch (error) {
-      throw error;
-    }
+    return result ? true : false;
   }
 
   updateRefreshToken(id: number, refreshToken: string) {

@@ -169,6 +169,26 @@ describe('UsersService', () => {
     expect(result).toEqual(userDataMock);
   }); */
 
+  it('should getSalt', async () => {
+    const result = await usersService.getSalt(1);
+    expect(result).toEqual(userDataMock);
+  });
+
+  it('should updateState', async () => {
+    const result = await usersService.updateState(1, true);
+    expect(result).toEqual(userDataMock);
+  });
+
+  it('should return user', async () => {
+    const result = await usersService.findOneByUsername('username');
+    expect(result).toEqual(userDataMock);
+  });
+
+  it('should return user', async () => {
+    const result = await usersService.findOneById(1);
+    expect(result).toEqual(userDataMock);
+  });
+
   afterEach(() => {
     // Optionally clear mock calls if needed
     jest.clearAllMocks();

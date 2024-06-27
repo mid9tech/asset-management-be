@@ -51,6 +51,11 @@ stages:
             displayName: 'Run tests'
 
           - script: |
+              npm run test:cov
+            displayName: 'Display coverage information'
+            continueOnError: true
+
+          - script: |
               npm audit --audit-level=high
             displayName: 'Run npm audit'
             continueOnError: true
