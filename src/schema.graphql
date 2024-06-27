@@ -102,8 +102,8 @@ input FindAssetsInput {
   query: String
   sortOrder: String = "asc"
   sortField: String = "assetCode"
-  stateFilter: String
-  categoryFilter: String
+  stateFilter: [String!]
+  categoryFilter: [String!]
 }
 
 input FindAssignmentsInput {

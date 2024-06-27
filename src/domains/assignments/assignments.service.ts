@@ -94,11 +94,12 @@ export class AssignmentsService {
         { assignedToUsername: { contains: query, mode: 'insensitive' } },
       ];
     }
-
-    if (isNaN(Date.parse(assignedDate))) {
-      throw new MyBadRequestException('assigned date is invalid');
-    } else {
-      where.assignedDate = new Date(assignedDate).toISOString();
+    if (assignedDate) {
+      if (isNaN(Date.parse(assignedDate))) {
+        throw new MyBadRequestException('assigned date is invalid');
+      } else {
+        where.assignedDate = new Date(assignedDate).toISOString();
+      }
     }
 
     if (reqUser) {
