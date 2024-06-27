@@ -113,6 +113,7 @@ input FindAssignmentsInput {
   sortOrder: String = "asc"
   state: String
   sort: String = "assetName"
+  assignedDate: String
 }
 
 type Mutation {

@@ -4,9 +4,13 @@ import { UpdateAssignmentInput } from './dto/update-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { ASSET_STATE, ASSIGNMENT_STATE } from 'src/shared/enums';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import {
+  MyBadRequestException,
+  MyEntityNotFoundException,
+} from 'src/shared/exceptions';
 import { FindAssignmentsInput } from './dto/find-assignment.input';
 import { Prisma } from '@prisma/client';
+import { ENTITY_NAME } from 'src/shared/constants';
 
 @Injectable()
 export class AssignmentsService {
@@ -44,7 +48,7 @@ export class AssignmentsService {
       }
 
       if (isNaN(Date.parse(createAssignmentInput.assignedDate))) {
-        throw new MyBadRequestException('DOB is invalid');
+        throw new MyBadRequestException('assigned date is invalid');
       }
 
       const result = await this.prismaService.assignment.create({
@@ -53,6 +57,7 @@ export class AssignmentsService {
           assignedById: userReq.id,
           location: userReq.location,
           state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+          assignedByUsername: userReq.username,
           assignedDate: new Date(
             createAssignmentInput.assignedDate,
           ).toISOString(),
@@ -66,7 +71,15 @@ export class AssignmentsService {
   }
 
   async findAll(input: FindAssignmentsInput, reqUser: CurrentUserInterface) {
-    const { limit = 20, page = 1, query, sort, sortOrder, state } = input;
+    const {
+      limit = 20,
+      page = 1,
+      query,
+      sort,
+      sortOrder,
+      state,
+      assignedDate,
+    } = input;
 
     const where: Prisma.AssignmentWhereInput = {};
 
@@ -80,6 +93,12 @@ export class AssignmentsService {
         { assetCode: { contains: query, mode: 'insensitive' } },
         { assignedToUsername: { contains: query, mode: 'insensitive' } },
       ];
+    }
+
+    if (isNaN(Date.parse(assignedDate))) {
+      throw new MyBadRequestException('assigned date is invalid');
+    } else {
+      where.assignedDate = new Date(assignedDate).toISOString();
     }
 
     if (reqUser) {
@@ -104,7 +123,7 @@ export class AssignmentsService {
         limit: limit,
         total: total,
         totalPages: totalPages,
-        assignments: assignments,
+        assignments: assignments ? assignments : [],
       };
     } catch (error) {
       throw error;
@@ -113,9 +132,15 @@ export class AssignmentsService {
 
   async findOne(id: number) {
     try {
-      return await this.prismaService.assignment.findFirst({
+      const result = await this.prismaService.assignment.findFirst({
         where: { id: id },
       });
+
+      if (!result) {
+        throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
+      }
+
+      return result;
     } catch (error) {
       return error;
     }
