@@ -1,6 +1,4 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
-import { ASSIGNMENT_STATE } from 'src/shared/enums';
-
 @InputType()
 export class CreateAssignmentInput {
   @Field()
