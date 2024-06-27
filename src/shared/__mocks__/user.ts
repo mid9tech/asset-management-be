@@ -1,7 +1,13 @@
-import { GENDER, LOCATION, USER_TYPE } from '../enums';
+import {
+  FindUsersInput,
+  FindUsersOutput,
+} from 'src/domains/users/dto/find-users.input';
+import { GENDER, LOCATION, USER_STATUS, USER_TYPE } from '../enums';
+import { CurrentUserInterface } from '../generics';
+import { User } from 'src/domains/users/entities/user.entity';
 
 // Adjust based on your Prisma schema
-export const userDataMock = [
+export const userDataMock: User[] = [
   {
     id: 1,
     firstName: 'Hai',
@@ -12,9 +18,9 @@ export const userDataMock = [
     gender: GENDER.MALE,
     salt: 'somesalt',
     refreshToken: 'some-refresh-token',
-    joinedDate: new Date('2000-12-22T13:32:33.076Z'),
+    joinedDate: '2000-12-22T13:32:33.076Z',
     type: USER_TYPE.ADMIN,
-    dateOfBirth: new Date('2000-12-22T13:32:33.076Z'),
+    dateOfBirth: '2000-12-22T13:32:33.076Z',
     state: true,
     location: LOCATION.HCM,
   },
@@ -137,3 +143,122 @@ export const userInputMock = [
     gender: GENDER.FEMALE,
   },
 ];
+
+export const findUserInputMock: FindUsersInput[] = [
+  {
+    limit: 10,
+    page: 1,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: undefined,
+    page: 1,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: undefined,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: 1,
+    query: undefined,
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: 1,
+    query: 'name',
+    sort: undefined,
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: 1,
+    query: 'name',
+    sort: 'username',
+    sortOrder: undefined,
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: 1,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: undefined,
+  },
+  {
+    limit: null,
+    page: 1,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: null,
+    query: 'name',
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+  {
+    limit: 10,
+    page: 1,
+    query: null,
+    sort: 'username',
+    sortOrder: 'desc',
+    type: [USER_TYPE.USER],
+  },
+];
+
+export const findUserOutputMock: FindUsersOutput[] = [
+  {
+    limit: 10,
+    page: 1,
+    total: 10,
+    totalPages: 1,
+    users: userDataMock,
+  },
+  {
+    limit: null,
+    page: 1,
+    total: 10,
+    totalPages: Infinity,
+    users: userDataMock,
+  },
+  {
+    limit: 10,
+    page: null,
+    total: 10,
+    totalPages: 1,
+    users: userDataMock,
+  },
+];
+
+export const currentUserMock: CurrentUserInterface = {
+  firstName: 'Taylor',
+  id: 1,
+  joinedDate: '2000-12-22T13:32:33.076Z',
+  lastName: 'Swift',
+  location: LOCATION.HCM,
+  staffCode: 'taylors',
+  state: USER_STATUS.ACTIVE,
+  type: USER_TYPE.ADMIN,
+  username: 'taylors',
+};

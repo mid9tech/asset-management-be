@@ -1,24 +1,30 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
 trigger:
-  branches:
-    include:
-      - main
+  - main
 
 resources:
   - repo: self
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
-  azureSubscription: 'RookieB7'
-  azureEnvironment: 'deploy api'
-  webAppName: 'api-asset-management'
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: '3cba6dde-e0b5-48ef-a318-2fe39541fc61'
+  imageRepository: 'assetmanagementbe'
+  containerRegistry: 'rookiesb7.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
 
 stages:
   - stage: Build
     displayName: 'Build and Test'
+    condition: ne(variables['build.sourceBranch'], 'refs/heads/main')
     jobs:
-      - job: Api_Asset_Management_NestJS
+      - job: Api_Asset_Management_NestJS_Build
         displayName: 'Lint, Test, and Audit NestJS'
         steps:
           - task: NodeTool@0
@@ -53,35 +59,23 @@ stages:
               npm run build
             displayName: 'Build project'
 
-          - task: ArchiveFiles@2
-            displayName: 'Archive files'
-            inputs:
-              rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
-              includeRootFolder: false
-              archiveType: zip
-              archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-              replaceExistingArchive: true
-
-          - publish: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-            artifact: drop
-
   - stage: Deploy
-    displayName: 'Deploy to Azure Web App'
+    displayName: Build and push image stage
     dependsOn: Build
-    condition: succeeded()
+    condition: eq(variables['build.sourceBranch'], 'refs/heads/main')
     jobs:
-      - deployment: Deploy
-        displayName: 'Deploy Job'
-        environment: $(azureEnvironment)
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - task: AzureWebApp@1
-                  inputs:
-                    azureSubscription: $(azureSubscription)
-                    appType: 'webAppLinux'
-                    appName: $(webAppName)
-                    runtimeStack: 'NODE|20-lts'
-                    package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
-                    startUpCommand: 'npm install -g npm@10.8.1 --force && npm run start:prod'
+      - job: Api_Asset_Management_NestJS_Deploy
+        displayName: 'Build and push image to Azure Container Registry'
+        pool:
+          vmImage: $(vmImageName)
+        steps:
+          - task: Docker@2
+            displayName: Build and push an image to container registry
+            inputs:
+              command: buildAndPush
+              repository: $(imageRepository)
+              dockerfile: $(dockerfilePath)
+              containerRegistry: $(dockerRegistryServiceConnection)
+              tags: |
+                latest
+                $(tag)

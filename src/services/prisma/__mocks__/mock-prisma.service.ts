@@ -7,5 +7,6 @@ export default class PrismaServiceMock {
     findFirst: jest.fn().mockReturnValue(userDataMock),
     findMany: jest.fn().mockReturnValue(userDataMock),
     delete: jest.fn().mockReturnValue(userDataMock),
+    count: jest.fn().mockReturnValue(10),
   };
 }
