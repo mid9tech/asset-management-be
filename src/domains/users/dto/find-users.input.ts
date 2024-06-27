@@ -6,8 +6,8 @@ import { User } from '../entities/user.entity';
 
 @InputType()
 export class FindUsersInput extends BasePagingRequest {
-  @Field(() => String, { nullable: true })
-  type: USER_TYPE;
+  @Field(() => [String], { nullable: true })
+  type?: USER_TYPE[];
 
   @Field(() => String, { nullable: true, defaultValue: 'firstName' })
   sort: string;

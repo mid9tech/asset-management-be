@@ -57,9 +57,11 @@ type Assignment {
   assigner: User!
   assignee: User!
   state: String!
-  note: String!
+  note: String
   assignedDate: String!
   assetId: Int!
+  assignedByUsername: String
+  assignedToUsername: String
 }
 
 type FindAssignmentsOutput {
@@ -92,7 +94,7 @@ input FindUsersInput {
   limit: Int = 20
   query: String
   sortOrder: String = "asc"
-  type: String
+  type: [String!]
   sort: String = "firstName"
 }
 
@@ -102,8 +104,8 @@ input FindAssetsInput {
   query: String
   sortOrder: String = "asc"
   sortField: String = "assetCode"
-  stateFilter: String
-  categoryFilter: Int
+  stateFilter: [String!]
+  categoryFilter: [String!]
 }
 
 input FindAssignmentsInput {
@@ -113,19 +115,17 @@ input FindAssignmentsInput {
   sortOrder: String = "asc"
   state: String
   sort: String = "assetName"
+  assignedDate: String
 }
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
   disableUser(id: Int!): Boolean!
-  removeUser(id: Int!): User!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
-  updateAssignment(updateAssignmentInput: UpdateAssignmentInput!): Assignment!
-  removeAssignment(id: Int!): Assignment!
   createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
   updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
@@ -190,24 +190,9 @@ input CreateAssignmentInput {
   assetName: String!
   assignedToId: Int!
   assignedToUsername: String!
-  assignedById: Int!
-  state: String!
   assignedDate: String!
-  note: String!
-  assetId: Int!
-}
-
-input UpdateAssignmentInput {
-  assetCode: String
-  assetName: String
-  assignedToId: Int
-  assignedToUsername: String
-  assignedById: Int
-  state: String
-  assignedDate: String
   note: String
-  assetId: Int
-  id: Int!
+  assetId: Int!
 }
 
 input CreateRequestReturnInput {

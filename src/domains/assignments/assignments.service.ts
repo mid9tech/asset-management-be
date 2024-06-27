@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAssignmentInput } from './dto/create-assignment.input';
-import { UpdateAssignmentInput } from './dto/update-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { ASSET_STATE, ASSIGNMENT_STATE } from 'src/shared/enums';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import {
+  MyBadRequestException,
+  MyEntityNotFoundException,
+} from 'src/shared/exceptions';
 import { FindAssignmentsInput } from './dto/find-assignment.input';
 import { Prisma } from '@prisma/client';
+import { ENTITY_NAME } from 'src/shared/constants';
 
 @Injectable()
 export class AssignmentsService {
@@ -25,7 +28,7 @@ export class AssignmentsService {
         },
       });
 
-      if (isAssetIsAssigned) {
+      if (createAssignmentInput.assetId && isAssetIsAssigned) {
         throw new MyBadRequestException(
           'Asset is already assigned for another user',
         );
@@ -39,12 +42,12 @@ export class AssignmentsService {
         },
       });
 
-      if (isUserAlreadyAssigned) {
+      if (createAssignmentInput.assignedToId && isUserAlreadyAssigned) {
         throw new MyBadRequestException('User is already assigned');
       }
 
       if (isNaN(Date.parse(createAssignmentInput.assignedDate))) {
-        throw new MyBadRequestException('DOB is invalid');
+        throw new MyBadRequestException('assigned date is invalid');
       }
 
       const result = await this.prismaService.assignment.create({
@@ -53,6 +56,7 @@ export class AssignmentsService {
           assignedById: userReq.id,
           location: userReq.location,
           state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+          assignedByUsername: userReq.username,
           assignedDate: new Date(
             createAssignmentInput.assignedDate,
           ).toISOString(),
@@ -66,7 +70,15 @@ export class AssignmentsService {
   }
 
   async findAll(input: FindAssignmentsInput, reqUser: CurrentUserInterface) {
-    const { limit = 20, page = 1, query, sort, sortOrder, state } = input;
+    const {
+      limit = 20,
+      page = 1,
+      query,
+      sort,
+      sortOrder,
+      state,
+      assignedDate,
+    } = input;
 
     const where: Prisma.AssignmentWhereInput = {};
 
@@ -81,6 +93,13 @@ export class AssignmentsService {
         { assignedToUsername: { contains: query, mode: 'insensitive' } },
       ];
     }
+    if (assignedDate) {
+      if (isNaN(Date.parse(assignedDate))) {
+        throw new MyBadRequestException('assigned date is invalid');
+      } else {
+        where.assignedDate = new Date(assignedDate).toISOString();
+      }
+    }
 
     if (reqUser) {
       where.location = reqUser.location; // Map to Prisma enum
@@ -88,38 +107,34 @@ export class AssignmentsService {
 
     const orderBy = { [sort]: sortOrder };
 
-    try {
-      const total = await this.prismaService.assignment.count({ where });
-      const users = await this.prismaService.assignment.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy,
-      });
+    const total = await this.prismaService.assignment.count({ where });
+    const assignments = await this.prismaService.assignment.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy,
+    });
 
-      const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.ceil(total / limit);
 
-      return {
-        page: page,
-        limit: limit,
-        total: total,
-        totalPages: totalPages,
-        data: users,
-      };
-    } catch (error) {
-      throw error;
+    return {
+      page: page,
+      limit: limit,
+      total: total,
+      totalPages: totalPages,
+      assignments: assignments ? assignments : [],
+    };
+  }
+
+  async findOne(id: number) {
+    const result = await this.prismaService.assignment.findFirst({
+      where: { id: id },
+    });
+
+    if (!result) {
+      throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
     }
-  }
 
-  findOne(id: number) {
-    return `This action returns a #${id} assignment`;
-  }
-
-  update(id: number, updateAssignmentInput: UpdateAssignmentInput) {
-    return `This action updates a #${id} assignment: ${updateAssignmentInput}`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} assignment`;
+    return result;
   }
 }

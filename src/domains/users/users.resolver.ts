@@ -29,18 +29,12 @@ export class UsersResolver {
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(() => FindUsersOutput, { name: 'findUsers' })
   async findUsers(
-    @CurrentUser() userReq: User,
+    @CurrentUser() userReq: CurrentUserInterface,
     @Args('request') request: FindUsersInput,
   ) {
     try {
-      const user = await this.usersService.findOne(
-        userReq.id,
-        userReq.location,
-      );
-      if (user) {
-        const result = await this.usersService.findAll(request, user);
-        return result;
-      }
+      const result = await this.usersService.findAll(request, userReq);
+      return result;
     } catch (error) {
       return error;
     }
@@ -73,10 +67,5 @@ export class UsersResolver {
   @Mutation(() => Boolean)
   disableUser(@Args('id', { type: () => Int }) id: number) {
     return this.usersService.disableUser(id);
-  }
-
-  @Mutation(() => User)
-  removeUser(@Args('id', { type: () => Int }) id: number) {
-    return this.usersService.remove(id);
   }
 }

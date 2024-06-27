@@ -11,6 +11,9 @@ export class FindAssignmentsInput extends BasePagingRequest {
 
   @Field(() => String, { nullable: true, defaultValue: 'assetName' })
   sort: string;
+
+  @Field({ nullable: true })
+  assignedDate: string;
 }
 
 @ObjectType()

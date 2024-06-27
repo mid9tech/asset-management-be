@@ -1,6 +1,4 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
-import { ASSIGNMENT_STATE } from 'src/shared/enums';
-
 @InputType()
 export class CreateAssignmentInput {
   @Field()
@@ -15,16 +13,10 @@ export class CreateAssignmentInput {
   @Field()
   assignedToUsername: string;
 
-  @Field(() => Int)
-  assignedById: number;
-
-  @Field()
-  state: ASSIGNMENT_STATE;
-
   @Field()
   assignedDate: string;
 
-  @Field()
+  @Field({ nullable: true })
   note: string;
 
   @Field(() => Int)

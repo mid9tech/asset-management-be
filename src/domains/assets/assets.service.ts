@@ -124,11 +124,10 @@ export class AssetsService {
     const orderBy = { [sortField]: sortOrder };
 
     if (stateFilter) {
-      where.state = ASSET_STATE[stateFilter];
+      where.state = { in: stateFilter.map((state) => ASSET_STATE[state]) };
     }
-
     if (categoryFilter) {
-      where.categoryId = categoryFilter;
+      where.categoryId = { in: categoryFilter.map((id) => parseInt(id)) };
     }
 
     try {

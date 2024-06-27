@@ -24,7 +24,7 @@ export class Assignment {
   @Field()
   state: ASSIGNMENT_STATE;
 
-  @Field()
+  @Field({ nullable: true })
   note: string;
 
   @Field()
@@ -32,4 +32,10 @@ export class Assignment {
 
   @Field(() => Int)
   assetId: number;
+
+  @Field({ nullable: true })
+  assignedByUsername: string;
+
+  @Field({ nullable: true })
+  assignedToUsername: string;
 }
