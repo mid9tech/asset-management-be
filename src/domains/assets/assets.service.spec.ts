@@ -6,7 +6,6 @@ import { CreateAssetInput } from './dto/create-asset.input';
 import { LOCATION, ASSET_STATE } from 'src/shared/enums';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { FindAssetsInput } from './dto/find-assets.input';
-import { FindAssetsOutput } from './dto/find-assets.output';
 import { UpdateAssetInput } from './dto/update-asset.input';
 
 describe('AssetsService', () => {
@@ -50,15 +49,14 @@ describe('AssetsService', () => {
   });
 
   describe('create', () => {
+    const createAssetInput: CreateAssetInput = {
+      assetName: 'Asset 1',
+      categoryId: 1,
+      installedDate: '2021-01-01',
+      state: ASSET_STATE.AVAILABLE,
+      specification: 'Spec',
+    };
     it('should create an asset successfully', async () => {
-      const createAssetInput: CreateAssetInput = {
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: '2021-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        specification: 'Spec',
-      };
-
       const assetCode = 'CAT000001';
       jest.spyOn(service, 'generateAssetCode').mockResolvedValue(assetCode);
       jest.spyOn(prismaService.asset, 'create').mockResolvedValue({
@@ -89,84 +87,57 @@ describe('AssetsService', () => {
       });
     });
 
-    it('should throw an error for invalid assetName', async () => {
-      const createAssetInput: CreateAssetInput = {
-        assetName: '',
-        categoryId: 1,
-        installedDate: '2021-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        specification: 'Spec',
-      };
-
-      await expect(
-        service.create(createAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Asset name is invalid'));
-    });
-
-    it('should throw an error for invalid categoryId', async () => {
-      const createAssetInput: CreateAssetInput = {
-        assetName: 'Asset 1',
-        categoryId: 0,
-        installedDate: '2021-01-01',
-        state: ASSET_STATE.AVAILABLE,
-        specification: 'Spec',
-      };
-
-      await expect(
-        service.create(createAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Category is invalid'));
-    });
-
-    it('should throw an error for invalid installedDate', async () => {
-      const createAssetInput: CreateAssetInput = {
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: 'invalid-date',
-        state: ASSET_STATE.AVAILABLE,
-        specification: 'Spec',
-      };
-
-      await expect(
-        service.create(createAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Installed date is invalid'));
-    });
-
-    it('should throw an error for invalid state', async () => {
-      const createAssetInput: CreateAssetInput = {
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: '2021-01-01',
-        state: '',
-        specification: 'Spec',
-      };
-
-      await expect(
-        service.create(createAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('State is invalid'));
-    });
+    it.each([
+      ['Asset name is invalid', { assetName: '' }],
+      ['Category is invalid', { categoryId: 0 }],
+      ['Installed date is invalid', { installedDate: 'invalid-date' }],
+      ['State is invalid', { state: '' }],
+    ])(
+      'should throw an error for invalid input: %s',
+      async (errorMsg, invalidInput) => {
+        await expect(
+          service.create(
+            { ...createAssetInput, ...invalidInput },
+            LOCATION.HCM,
+          ),
+        ).rejects.toThrow(new MyBadRequestException(errorMsg));
+      },
+    );
   });
 
   describe('update', () => {
+    const existingAsset = {
+      id: 1,
+      assetCode: 'ASSET001',
+      assetName: 'Asset 1',
+      categoryId: 1,
+      installedDate: new Date('2021-01-01'),
+      state: ASSET_STATE.AVAILABLE,
+      location: LOCATION.HCM,
+      specification: 'Spec',
+      isRemoved: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const result = {
+      id: 1,
+      assetCode: 'ASSET001',
+      assetName: 'Updated Asset',
+      categoryId: 1,
+      installedDate: new Date('2022-01-01'),
+      state: ASSET_STATE.NOT_AVAILABLE,
+      location: LOCATION.HCM,
+      specification: 'Updated Spec',
+      isRemoved: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
     it('should update an asset successfully', async () => {
       const updateAssetInput: UpdateAssetInput = {
         assetName: 'Updated Asset',
         installedDate: '2022-01-01',
         state: ASSET_STATE.NOT_AVAILABLE,
         specification: 'Updated Spec',
-      };
-
-      const existingAsset = {
-        id: 1,
-        assetCode: 'ASSET001',
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: new Date('2021-01-01T00:00:00.000Z'),
-        state: ASSET_STATE.AVAILABLE,
-        location: LOCATION.HCM,
-        specification: 'Spec',
-        isRemoved: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
       jest
@@ -176,7 +147,7 @@ describe('AssetsService', () => {
         ...existingAsset,
         ...updateAssetInput,
         installedDate: new Date(updateAssetInput.installedDate),
-        state: ASSET_STATE.NOT_AVAILABLE, // Add the correct value for the state property
+        state: ASSET_STATE.NOT_AVAILABLE,
       });
 
       const result = await service.update(1, updateAssetInput, LOCATION.HCM);
@@ -187,188 +158,153 @@ describe('AssetsService', () => {
       });
     });
 
-    it('should throw an error if asset is not found', async () => {
+    it.each([
+      ['Asset not found', null],
+      [
+        'Asset not found in your location',
+        { ...existingAsset, location: LOCATION.HN },
+      ],
+    ])(
+      'should throw an error if asset is not found or in a different location: %s',
+      async (errorMsg, asset) => {
+        jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(asset);
+
+        const updateAssetInput: UpdateAssetInput = {
+          assetName: 'Updated Asset',
+          installedDate: '2022-01-01',
+          state: ASSET_STATE.NOT_AVAILABLE,
+          specification: 'Updated Spec',
+        };
+
+        await expect(
+          service.update(1, updateAssetInput, LOCATION.HCM),
+        ).rejects.toThrow(new MyBadRequestException(errorMsg));
+      },
+    );
+
+    it.each([
+      ['Installed date is invalid', { installedDate: '' }],
+      ['State is invalid', { state: '' }],
+      ['Asset name is invalid', { assetName: '' }],
+    ])(
+      'should throw an error for invalid input: %s',
+      async (errorMsg, invalidInput) => {
+        jest
+          .spyOn(prismaService.asset, 'findUnique')
+          .mockResolvedValue(existingAsset);
+
+        const updateAssetInput: UpdateAssetInput = {
+          assetName: 'Updated Asset',
+          installedDate: '2022-01-01',
+          state: ASSET_STATE.NOT_AVAILABLE,
+          specification: 'Updated Spec',
+          ...invalidInput,
+        };
+
+        await expect(
+          service.update(1, updateAssetInput, LOCATION.HCM),
+        ).rejects.toThrow(new MyBadRequestException(errorMsg));
+      },
+    );
+
+    it('should throw an error if asset is assigned', async () => {
+      const assignedAsset = { ...existingAsset, state: ASSET_STATE.ASSIGNED };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(assignedAsset);
+
       const updateAssetInput: UpdateAssetInput = {
         assetName: 'Updated Asset',
-
         installedDate: '2022-01-01',
         state: ASSET_STATE.NOT_AVAILABLE,
         specification: 'Updated Spec',
       };
 
-      jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(null);
-
       await expect(
         service.update(1, updateAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Asset not found'));
+      ).rejects.toThrow(
+        new MyBadRequestException('Can not edit ! Asset is assigned to user'),
+      );
     });
 
-    // it("should throw an error if asset is not in the admin's location", async () => {
-    //   const updateAssetInput: UpdateAssetInput = {
-    //     assetName: 'Updated Asset',
+    it('should do nothing where no updates are needed', async () => {
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(existingAsset);
 
-    //     installedDate: '2022-01-01',
-    //     state: ASSET_STATE.NOT_AVAILABLE,
-    //     specification: 'Updated Spec',
-    //   };
+      const updateAssetInput: UpdateAssetInput = {
+        assetName: 'Asset 1',
+        installedDate: '2021-01-01',
+        state: ASSET_STATE.AVAILABLE,
+        specification: 'Spec',
+      };
 
-    //   const existingAsset = {
-    //     id: 1,
-    //     assetCode: 'ASSET001',
-    //     assetName: 'Asset 1',
-    //     categoryId: 1,
-    //     installedDate: new Date('2021-01-01'),
-    //     state: ASSET_STATE.AVAILABLE,
-    //     location: LOCATION.HCM,
-    //     specification: 'Spec',
-    //     isRemoved: false,
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   };
+      jest
+        .spyOn(prismaService.asset, 'update')
+        .mockResolvedValue(existingAsset);
 
-    //   jest
-    //     .spyOn(prismaService.asset, 'findUnique')
-    //     .mockResolvedValue(existingAsset);
+      const result = await service.update(1, updateAssetInput, LOCATION.HCM);
 
-    //   await expect(
-    //     service.update(1, updateAssetInput, LOCATION.HCM),
-    //   ).rejects.toThrow(
-    //     new MyBadRequestException('Asset not found in your location'),
-    //   );
-    // });
+      expect(result).toEqual({
+        ...existingAsset,
+        installedDate: existingAsset.installedDate.toISOString(),
+      });
+    });
 
-    it('should throw an error for invalid installedDate', async () => {
+    it('should update an asset successfully with specification from updateAssetInput', async () => {
       const updateAssetInput: UpdateAssetInput = {
         assetName: 'Updated Asset',
-
-        installedDate: '',
+        installedDate: '2022-01-01',
         state: ASSET_STATE.NOT_AVAILABLE,
-        specification: 'Updated Spec',
-      };
-
-      const existingAsset = {
-        id: 1,
-        assetCode: 'ASSET001',
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: new Date('2021-01-01'),
-        state: ASSET_STATE.AVAILABLE,
-        location: LOCATION.HCM,
-        specification: 'Spec',
-        isRemoved: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        specification: 'Updated Spec', // Ensure this is defined
       };
 
       jest
         .spyOn(prismaService.asset, 'findUnique')
         .mockResolvedValue(existingAsset);
+      jest.spyOn(prismaService.asset, 'update').mockResolvedValue(result);
 
-      await expect(
-        service.update(1, updateAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Installed date is invalid'));
+      const updatedAsset = await service.update(
+        1,
+        updateAssetInput,
+        LOCATION.HCM,
+      );
+
+      expect(updatedAsset).toEqual({
+        ...result,
+        installedDate: result.installedDate.toISOString(),
+      });
     });
 
-    it('should throw an error for invalid state', async () => {
+    it('should update an asset successfully with specification from asset', async () => {
       const updateAssetInput: UpdateAssetInput = {
         assetName: 'Updated Asset',
-
-        installedDate: '2022-01-01',
-        state: '',
-        specification: 'Updated Spec',
-      };
-
-      const existingAsset = {
-        id: 1,
-        assetCode: 'ASSET001',
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: new Date('2021-01-01'),
-        state: ASSET_STATE.AVAILABLE,
-        location: LOCATION.HCM,
-        specification: 'Spec',
-        isRemoved: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      jest
-        .spyOn(prismaService.asset, 'findUnique')
-        .mockResolvedValue(existingAsset);
-
-      await expect(
-        service.update(1, updateAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('State is invalid'));
-    });
-
-    it('should throw an error for invalid assetName', async () => {
-      const updateAssetInput: UpdateAssetInput = {
-        assetName: '',
-
         installedDate: '2022-01-01',
         state: ASSET_STATE.NOT_AVAILABLE,
-        specification: 'Updated Spec',
-      };
-
-      const existingAsset = {
-        id: 1,
-        assetCode: 'ASSET001',
-        assetName: 'Asset 1',
-        categoryId: 1,
-        installedDate: new Date('2021-01-01'),
-        state: ASSET_STATE.AVAILABLE,
-        location: LOCATION.HCM,
-        specification: 'Spec',
-        isRemoved: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        specification: undefined,
       };
 
       jest
         .spyOn(prismaService.asset, 'findUnique')
         .mockResolvedValue(existingAsset);
+      jest.spyOn(prismaService.asset, 'update').mockResolvedValue(result);
 
-      await expect(
-        service.update(1, updateAssetInput, LOCATION.HCM),
-      ).rejects.toThrow(new MyBadRequestException('Asset name is invalid'));
+      const updatedAsset = await service.update(
+        1,
+        updateAssetInput,
+        LOCATION.HCM,
+      );
+
+      expect(updatedAsset).toEqual({
+        ...result,
+        installedDate: result.installedDate.toISOString(),
+      });
     });
-
-    // it('should throw an error if asset is assigned', async () => {
-    //   const updateAssetInput: UpdateAssetInput = {
-    //     assetName: 'Updated Asset',
-    //     installedDate: new Date('2022-01-01').toISOString(),
-    //     state: ASSET_STATE.AVAILABLE,
-    //     specification: 'Updated Spec',
-    //   };
-
-    //   const existingAsset = {
-    //     id: 1,
-    //     assetCode: 'ASSET001',
-    //     assetName: 'Asset 1',
-    //     categoryId: 1,
-    //     installedDate: new Date('2021-01-01'),
-    //     state: ASSET_STATE.AVAILABLE,
-    //     location: LOCATION.HCM,
-    //     specification: 'Spec',
-    //     isRemoved: false,
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   };
-
-    //   jest
-    //     .spyOn(prismaService.asset, 'findUnique')
-    //     .mockResolvedValue(existingAsset);
-
-    //   await expect(
-    //     service.update(1, updateAssetInput, LOCATION.HCM),
-    //   ).rejects.toThrow(
-    //     new MyBadRequestException('Can not edit ! Asset is assigned to user'),
-    //   );
-    // });
   });
 
   describe('findAssets', () => {
-    it('should find assets successfully', async () => {
+    it('should find assets successfully with stateFilter and categoryFilter', async () => {
       const findAssetsInput: FindAssetsInput = {
         page: 1,
         limit: 10,
@@ -387,7 +323,7 @@ describe('AssetsService', () => {
           location: LOCATION.HCM,
           state: ASSET_STATE.AVAILABLE,
           installedDate: new Date('2021-01-01'),
-          categoryId: '1',
+          categoryId: 1,
           specification: 'Spec',
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -397,6 +333,7 @@ describe('AssetsService', () => {
       jest.spyOn(prismaService.asset, 'findMany').mockResolvedValue(assets);
 
       const result = await service.findAssets(findAssetsInput, LOCATION.HCM);
+
       expect(result).toEqual({
         assets: assets.map((asset) => ({
           ...asset,
@@ -406,31 +343,20 @@ describe('AssetsService', () => {
         limit: 10,
         total: 1,
         totalPages: 1,
-      } as FindAssetsOutput);
+      });
     });
 
-    // it('should handle errors when finding assets', async () => {
-    //   const findAssetsInput: FindAssetsInput = {
-    //     page: 1,
-    //     limit: 10,
-    //     query: 'Asset',
-    //     sortField: 'assetCode',
-    //     sortOrder: 'asc',
-    //     stateFilter: 'AVAILABLE',
-    //     categoryFilter: 1,
-    //   };
+    it('should find assets successfully without filters', async () => {
+      const findAssetsInput: FindAssetsInput = {
+        page: 1,
+        limit: 10,
+        sortField: '',
+        stateFilter: [],
+        categoryFilter: [],
+        query: '',
+        sortOrder: 'asc',
+      };
 
-    //   jest
-    //     .spyOn(prismaService.asset, 'count')
-    //     .mockRejectedValue(new Error('Database error'));
-    //   await expect(
-    //     service.findAssets(findAssetsInput, LOCATION.HCM),
-    //   ).rejects.toThrow(new MyBadRequestException('Error finding assets'));
-    // });
-  });
-
-  describe('findAll', () => {
-    it('should find all assets successfully', async () => {
       const assets = [
         {
           id: 1,
@@ -441,61 +367,147 @@ describe('AssetsService', () => {
           installedDate: new Date('2021-01-01'),
           categoryId: 1,
           specification: 'Spec',
-        },
-      ] as any;
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any,
+      ];
+      jest.spyOn(prismaService.asset, 'count').mockResolvedValue(1);
       jest.spyOn(prismaService.asset, 'findMany').mockResolvedValue(assets);
 
-      const result = await service.findAll();
-      expect(result).toEqual(assets);
+      const result = await service.findAssets(findAssetsInput, LOCATION.HCM);
+
+      expect(result).toEqual({
+        assets: assets.map((asset) => ({
+          ...asset,
+          installedDate: asset.installedDate.toISOString(),
+        })),
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      });
+    });
+
+    it('should handle errors while finding assets', async () => {
+      const findAssetsInput: FindAssetsInput = {
+        page: 1,
+        limit: 10,
+        sortField: '',
+        stateFilter: [],
+        categoryFilter: [],
+        query: '',
+        sortOrder: 'asc',
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'count')
+        .mockRejectedValue(new Error('DB error'));
+      jest
+        .spyOn(prismaService.asset, 'findMany')
+        .mockRejectedValue(new Error('DB error'));
+
+      await expect(
+        service.findAssets(findAssetsInput, LOCATION.HCM),
+      ).rejects.toThrow(new MyBadRequestException('Error finding assets'));
+    });
+
+    it('should return an empty array if no assets match the filters', async () => {
+      const findAssetsInput: FindAssetsInput = {
+        page: 1,
+        limit: 10,
+        query: 'NonExistingAsset',
+        sortField: 'assetCode',
+        sortOrder: 'asc',
+        stateFilter: ['AVAILABLE'],
+        categoryFilter: ['1'],
+      };
+
+      jest.spyOn(prismaService.asset, 'count').mockResolvedValue(0);
+      jest.spyOn(prismaService.asset, 'findMany').mockResolvedValue([]);
+
+      const result = await service.findAssets(findAssetsInput, LOCATION.HCM);
+
+      expect(result).toEqual({
+        assets: [],
+        page: 1,
+        limit: 10,
+        total: 0,
+        totalPages: 0,
+      });
     });
   });
 
   describe('findOne', () => {
-    // it('should find one asset successfully', async () => {
-    //   const asset = {
-    //     id: 1,
-    //     assetName: 'Asset 1',
-    //     assetCode: 'CAT000001',
-    //     location: LOCATION.HCM,
-    //     state: ASSET_STATE.AVAILABLE,
-    //     installedDate: new Date('2021-01-01').toDateString(),
-    //     categoryId: 1,
-    //     specification: 'Spec',
-    //   } as any;
-    //   jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(asset);
+    const existingAsset = {
+      id: 1,
+      assetCode: 'ASSET001',
+      assetName: 'Asset 1',
+      categoryId: 1,
+      installedDate: new Date('2021-01-01'),
+      state: ASSET_STATE.AVAILABLE,
+      location: LOCATION.HCM,
+      specification: 'Spec',
+      isRemoved: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    //   const result = await service.findOne(1, LOCATION.HCM);
-    //   expect(result).toEqual(asset);
-    // });
+    it('should find one asset successfully', async () => {
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(existingAsset);
 
-    it('should throw an error if asset is not found in location', async () => {
-      const asset = {
-        id: 1,
-        assetName: 'Asset 1',
-        assetCode: 'CAT000001',
+      const result = await service.findOne(1, LOCATION.HCM);
+      expect(result).toEqual({
+        ...existingAsset,
+        installedDate: existingAsset.installedDate.toISOString(),
+      });
+    });
+
+    it('should throw an error if asset is not found in the location', async () => {
+      const assetInDifferentLocation = {
+        ...existingAsset,
         location: LOCATION.HN,
-        state: ASSET_STATE.AVAILABLE,
-        installedDate: new Date('2021-01-01'),
-        categoryId: 1,
-        specification: 'Spec',
-      } as any;
-      jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(asset);
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(assetInDifferentLocation);
 
       await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
         new MyBadRequestException('Asset not found in your location'),
       );
     });
+
+    it('should throw an error if asset is not found', async () => {
+      jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(null);
+
+      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset not found'),
+      );
+    });
   });
 
   describe('generateAssetCode', () => {
-    it('should generate an asset code successfully', async () => {
-      const categoryId = 1;
+    it('should generate a new asset code', async () => {
       const prefix = 'CAT';
       jest.spyOn(categoriesService, 'getPrefixById').mockResolvedValue(prefix);
-      jest.spyOn(prismaService.asset, 'count').mockResolvedValue(0);
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue({
+        id: 1,
+        assetCode: 'CAT000001',
+      } as any);
 
-      const assetCode = await service.generateAssetCode(categoryId);
-      expect(assetCode).toBe('CAT000001');
+      const result = await service.generateAssetCode(1);
+      expect(result).toEqual('CAT000002');
+    });
+
+    it('should generate a new asset code if no previous assets', async () => {
+      const prefix = 'CAT';
+      jest.spyOn(categoriesService, 'getPrefixById').mockResolvedValue(prefix);
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue(null);
+
+      const result = await service.generateAssetCode(1);
+      expect(result).toEqual('CAT000001');
     });
   });
 });
