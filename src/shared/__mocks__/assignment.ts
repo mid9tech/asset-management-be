@@ -20,6 +20,8 @@ export const assignmentDataMock: Assignment[] = [
     state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
     id: 1,
     note: 'Note',
+    assignedByUsername: 'assignedByUsername',
+    assignedToUsername: 'assignedToUsername',
   },
 ];
 
