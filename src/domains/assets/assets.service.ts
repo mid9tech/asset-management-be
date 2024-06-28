@@ -133,10 +133,9 @@ export class AssetsService {
     try {
       const total = await this.prismaService.asset.count({ where });
 
-      const orderBy =
-        sortField === 'categoryId'
-          ? { category: { categoryName: sortOrder } }
-          : { [sortField]: sortOrder };
+      const orderBy = sortField.includes('category')
+        ? { category: { categoryName: sortOrder } }
+        : { [sortField]: sortOrder };
 
       const assets = await this.prismaService.asset.findMany({
         where,

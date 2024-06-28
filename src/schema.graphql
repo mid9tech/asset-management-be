@@ -59,7 +59,7 @@ type Assignment {
   state: String!
   note: String
   assignedDate: String!
-  assetId: Int!
+  asset: Asset!
   assignedByUsername: String
   assignedToUsername: String
 }
