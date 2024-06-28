@@ -24,6 +24,22 @@ export const userDataMock: User[] = [
     state: true,
     location: LOCATION.HCM,
   },
+  {
+    id: 2,
+    firstName: 'Hai',
+    lastName: 'Nguyen Van',
+    username: 'hainv',
+    password: 'password',
+    staffCode: 'SD0001',
+    gender: GENDER.MALE,
+    salt: 'somesalt',
+    refreshToken: 'some-refresh-token',
+    joinedDate: '2000-12-22T13:32:33.076Z',
+    type: USER_TYPE.ADMIN,
+    dateOfBirth: '2000-12-22T13:32:33.076Z',
+    state: true,
+    location: LOCATION.HCM,
+  },
 ];
 
 export const userInputMock = [

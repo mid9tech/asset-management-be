@@ -23,6 +23,7 @@ import {
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AssetsService } from '../assets/assets.service';
+import { Asset } from '../assets/entities/asset.entity';
 
 @Resolver(() => Assignment)
 export class AssignmentsResolver {
@@ -72,7 +73,7 @@ export class AssignmentsResolver {
     return this.usersService.findOne(assignment.assignedToId, userReq.location);
   }
 
-  @ResolveField(() => User, { name: 'asset' })
+  @ResolveField(() => Asset, { name: 'asset' })
   getAsset(
     @Parent() assignment: Assignment,
     @CurrentUser() userReq: CurrentUserInterface,

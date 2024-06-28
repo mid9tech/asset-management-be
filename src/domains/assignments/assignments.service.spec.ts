@@ -9,10 +9,14 @@ import {
   findAssignmentInputMock,
   findAssignmentOutputMock,
 } from 'src/shared/__mocks__';
-import { MyBadRequestException } from 'src/shared/exceptions';
+import {
+  MyBadRequestException,
+  MyEntityNotFoundException,
+} from 'src/shared/exceptions';
 
 describe('AssignmentsService', () => {
   let assignmentService: AssignmentsService;
+  let prismaService: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,6 +30,7 @@ describe('AssignmentsService', () => {
     }).compile();
 
     assignmentService = module.get<AssignmentsService>(AssignmentsService);
+    prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should always pass', () => {
@@ -134,6 +139,14 @@ describe('AssignmentsService', () => {
     it('should return assignment by id', async () => {
       const result = await assignmentService.findOne(1);
       expect(result).toEqual(assignmentDataMock[0]);
+    });
+
+    it('should throw MyEntityNotFoundException by invalid id', async () => {
+      jest.spyOn(prismaService.assignment, 'findFirst').mockResolvedValue(null);
+
+      await expect(assignmentService.findOne(1)).rejects.toThrow(
+        MyEntityNotFoundException,
+      );
     });
   });
 });
