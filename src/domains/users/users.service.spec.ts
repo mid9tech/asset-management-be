@@ -17,7 +17,7 @@ import {
   userInputMock,
 } from 'src/shared/__mocks__';
 import { MyBadRequestException } from 'src/shared/exceptions';
-import { LOCATION, USER_TYPE } from 'src/shared/enums';
+import { LOCATION } from 'src/shared/enums';
 import { GENDER } from '@prisma/client';
 
 describe('UsersService', () => {
@@ -202,7 +202,9 @@ describe('UsersService', () => {
 
   // Additional existing test cases
   it('should update Password', async () => {
-    jest.spyOn(usersService, 'getSalt').mockResolvedValue({ salt: '$2b$10$r22I5rrcS52ukc6xnAmuQO' });
+    jest
+      .spyOn(usersService, 'getSalt')
+      .mockResolvedValue({ salt: '$2b$10$r22I5rrcS52ukc6xnAmuQO' });
     const result = await usersService.updatePassword(1, 'new password');
     expect(result).toEqual(userDataMock);
   });
