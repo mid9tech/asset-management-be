@@ -121,17 +121,23 @@ export class AssetsService {
     if (location) {
       where.location = location;
     }
-    const orderBy = { [sortField]: sortOrder };
 
     if (stateFilter) {
       where.state = { in: stateFilter.map((state) => ASSET_STATE[state]) };
     }
+
     if (categoryFilter) {
       where.categoryId = { in: categoryFilter.map((id) => parseInt(id)) };
     }
 
     try {
       const total = await this.prismaService.asset.count({ where });
+
+      const orderBy =
+        sortField === 'categoryId'
+          ? { category: { categoryName: sortOrder } }
+          : { [sortField]: sortOrder };
+
       const assets = await this.prismaService.asset.findMany({
         where,
         skip: (page - 1) * limit,
@@ -152,19 +158,17 @@ export class AssetsService {
       result.totalPages = totalPages;
       return result;
     } catch (error) {
-      console.error('Error finding assets:', error);
       throw new MyBadRequestException('Error finding assets');
     }
-  }
-
-  async findAll() {
-    return this.prismaService.asset.findMany();
   }
 
   async findOne(id: number, location: LOCATION) {
     const asset = await this.prismaService.asset.findUnique({
       where: { id },
     });
+    if (!asset) {
+      throw new MyBadRequestException('Asset not found');
+    }
     if (asset.location !== location) {
       throw new MyBadRequestException('Asset not found in your location');
     }
