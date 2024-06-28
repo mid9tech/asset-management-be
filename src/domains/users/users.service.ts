@@ -248,7 +248,7 @@ export class UsersService {
     const result = await this.prismaService.user.update({
       where: { id },
       data: {
-        isDisabled: USER_STATUS.INACTIVE,
+        isDisabled: USER_STATUS.ACTIVE,
       },
     });
 

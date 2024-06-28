@@ -22,12 +22,15 @@ import {
 } from './dto/find-assignment.input';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { AssetsService } from '../assets/assets.service';
+import { Asset } from '../assets/entities/asset.entity';
 
 @Resolver(() => Assignment)
 export class AssignmentsResolver {
   constructor(
     private readonly assignmentsService: AssignmentsService,
     private readonly usersService: UsersService,
+    private readonly assetService: AssetsService,
   ) {}
 
   @Roles(USER_TYPE.ADMIN)
@@ -55,17 +58,34 @@ export class AssignmentsResolver {
   }
 
   @ResolveField(() => User, { name: 'assigner' })
-  getAssigner(@Parent() assignment: Assignment) {
-    return this.usersService.findOne(assignment.assignedById);
+  getAssigner(
+    @Parent() assignment: Assignment,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.usersService.findOne(assignment.assignedById, userReq.location);
   }
 
   @ResolveField(() => User, { name: 'assignee' })
-  getAssignee(@Parent() assignment: Assignment) {
-    return this.usersService.findOne(assignment.assignedToId);
+  getAssignee(
+    @Parent() assignment: Assignment,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.usersService.findOne(assignment.assignedToId, userReq.location);
+  }
+
+  @ResolveField(() => Asset, { name: 'asset' })
+  getAsset(
+    @Parent() assignment: Assignment,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assetService.findOne(assignment.assetId, userReq.location);
   }
 
   @Query(() => Assignment, { name: 'assignment' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.assignmentsService.findOne(id);
+  findOne(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.findOne(id, userReq.location);
   }
 }

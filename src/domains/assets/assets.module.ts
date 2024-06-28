@@ -7,5 +7,6 @@ import { CategoriesModule } from '../categories/categories.module';
 @Module({
   imports: [PrismaModule, CategoriesModule],
   providers: [AssetsResolver, AssetsService],
+  exports: [AssetsService],
 })
 export class AssetsModule {}

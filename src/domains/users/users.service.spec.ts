@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 
-import { ENTITY_NAME } from '../../shared/constants';
-import { MyEntityNotFoundException } from '../../shared/exceptions';
+import { ENTITY_NAME } from 'src/shared/constants';
+import {
+  MyEntityNotFoundException,
+  MyForbiddenException,
+} from 'src/shared/exceptions';
 
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import PrismaServiceMock from 'src/services/prisma/__mocks__/mock-prisma.service';
@@ -15,6 +18,7 @@ import {
 } from 'src/shared/__mocks__';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { LOCATION } from 'src/shared/enums';
+import { GENDER } from '@prisma/client';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -137,6 +141,31 @@ describe('UsersService', () => {
         usersService.update(1, userInputMock[6]),
       ).rejects.toThrowError(MyBadRequestException);
     });
+
+    it('should throw MyEntityNotFoundException for user not found', async () => {
+      jest.spyOn(prismaServiceMock.user, 'findFirst').mockResolvedValue(null);
+      await expect(usersService.update(1, userInputMock[6])).rejects.toThrow(
+        MyEntityNotFoundException,
+      );
+    });
+
+    it('should throw MyForbiddenException because edit ADMIN', async () => {
+      jest.spyOn(prismaServiceMock.user, 'findFirst').mockResolvedValue({
+        ...userDataMock[1],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        salt: '1111',
+        isAssigned: true,
+        isDisabled: false,
+        refreshToken: '111111',
+        gender: GENDER.FEMALE,
+        joinedDate: new Date(),
+        dateOfBirth: new Date(),
+      });
+      await expect(usersService.update(1, userInputMock[6])).rejects.toThrow(
+        MyForbiddenException,
+      );
+    });
   });
 
   // Additional existing test cases
@@ -172,10 +201,13 @@ describe('UsersService', () => {
   });
 
   // Additional existing test cases
-  /* it('should update Password', async () => {
+  it('should update Password', async () => {
+    jest
+      .spyOn(usersService, 'getSalt')
+      .mockResolvedValue({ salt: '$2b$10$r22I5rrcS52ukc6xnAmuQO' });
     const result = await usersService.updatePassword(1, 'new password');
     expect(result).toEqual(userDataMock);
-  }); */
+  });
 
   it('should getSalt', async () => {
     const result = await usersService.getSalt(1);

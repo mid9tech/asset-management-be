@@ -33,22 +33,26 @@ export class AssetsResolver {
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Mutation(() => Asset)
-  createAsset(
+  async createAsset(
     @Args('createAssetInput') createAssetInput: CreateAssetInput,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
-    return this.assetsService.create(createAssetInput, userReq.location);
+    return await this.assetsService.create(createAssetInput, userReq.location);
   }
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Mutation(() => Asset)
-  updateAsset(
+  async updateAsset(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateAssetInput') updateAssetInput: UpdateAssetInput,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
-    return this.assetsService.update(id, updateAssetInput, userReq.location);
+    return await this.assetsService.update(
+      id,
+      updateAssetInput,
+      userReq.location,
+    );
   }
 
   @Roles(USER_TYPE.ADMIN)
@@ -65,16 +69,16 @@ export class AssetsResolver {
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(() => Asset, { name: 'findOneAsset' })
-  findOne(
+  async findOne(
     @CurrentUser() userReq: CurrentUserInterface,
     @Args('id', { type: () => Int }) id: number,
   ) {
     const location = userReq.location;
-    return this.assetsService.findOne(id, location);
+    return await this.assetsService.findOne(id, location);
   }
 
   @ResolveField(() => Category)
-  category(@Parent() asset: Asset) {
-    return this.categoryService.findById(asset.categoryId);
+  async category(@Parent() asset: Asset) {
+    return await this.categoryService.findById(asset.categoryId);
   }
 }
