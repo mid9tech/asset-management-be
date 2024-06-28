@@ -5,6 +5,7 @@ import AssignmentsServiceMock from './__mocks__/mock-assignment.service';
 import { UsersService } from '../users/users.service';
 import UsersServiceMock from '../users/__mocks__/mock-users.service';
 import {
+  assetDataMock,
   assignmentDataMock,
   assignmentInputMock,
   currentUserMock,
@@ -13,6 +14,8 @@ import {
   userDataMock,
 } from 'src/shared/__mocks__';
 import { MyBadRequestException } from 'src/shared/exceptions';
+import { AssetsService } from '../assets/assets.service';
+import AssetsServiceMock from '../assets/__mocks__/mock-assets.service';
 
 describe('AssignmentsResolver', () => {
   let resolver: AssignmentsResolver;
@@ -28,6 +31,10 @@ describe('AssignmentsResolver', () => {
         {
           provide: UsersService,
           useClass: UsersServiceMock,
+        },
+        {
+          provide: AssetsService,
+          useClass: AssetsServiceMock,
         },
       ],
     }).compile();
@@ -83,7 +90,7 @@ describe('AssignmentsResolver', () => {
   describe('getAssigner', () => {
     it('should return the assigner', async () => {
       const assignment = { assignedById: 1 } as any;
-      const result = await resolver.getAssigner(assignment);
+      const result = await resolver.getAssigner(assignment, currentUserMock);
       expect(result).toEqual(userDataMock);
     });
   });
@@ -91,7 +98,7 @@ describe('AssignmentsResolver', () => {
   describe('getAssignee', () => {
     it('should return the assignee', async () => {
       const assignment = { assignedToId: 1 } as any;
-      const result = await resolver.getAssignee(assignment);
+      const result = await resolver.getAssignee(assignment, currentUserMock);
       expect(result).toEqual(userDataMock);
     });
   });
@@ -99,14 +106,32 @@ describe('AssignmentsResolver', () => {
   describe('findOne', () => {
     it('should return a single assignment by ID', async () => {
       const id = 1;
-      const result = await resolver.findOne(id);
+      const result = await resolver.findOne(id, currentUserMock);
       expect(result).toEqual(assignmentDataMock[0]);
     });
 
     it('should return null if assignment not found', async () => {
       const id = 2;
-      const result = await resolver.findOne(id);
+      const result = await resolver.findOne(id, currentUserMock);
       expect(result).toBeNull();
+    });
+  });
+
+  describe('getAsset', () => {
+    it('should return a single asset by ID', async () => {
+      const result = await resolver.getAsset(
+        assignmentDataMock[0],
+        currentUserMock,
+      );
+      expect(result).toEqual(assetDataMock[0]);
+    });
+
+    it('assetId is not valid, should return null', async () => {
+      const result = await resolver.getAsset(
+        assignmentDataMock[1],
+        currentUserMock,
+      );
+      expect(result).toEqual(null);
     });
   });
 });
