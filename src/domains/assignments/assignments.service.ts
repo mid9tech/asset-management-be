@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateAssignmentInput } from './dto/create-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
-import { ASSET_STATE, ASSIGNMENT_STATE } from 'src/shared/enums';
+import { ASSET_STATE, ASSIGNMENT_STATE, LOCATION } from 'src/shared/enums';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
@@ -126,9 +126,9 @@ export class AssignmentsService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, location?: LOCATION) {
     const result = await this.prismaService.assignment.findFirst({
-      where: { id: id },
+      where: { id: id, location: location },
     });
 
     if (!result) {

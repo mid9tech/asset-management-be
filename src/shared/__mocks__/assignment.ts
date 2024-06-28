@@ -6,6 +6,7 @@ import {
   FindAssignmentsOutput,
   FindAssignmentsInput,
 } from 'src/domains/assignments/dto/find-assignment.input';
+import { assetDataMock } from './asset';
 
 export const assignmentDataMock: Assignment[] = [
   {
@@ -22,6 +23,23 @@ export const assignmentDataMock: Assignment[] = [
     note: 'Note',
     assignedByUsername: 'assignedByUsername',
     assignedToUsername: 'assignedToUsername',
+    asset: assetDataMock[0],
+  },
+  {
+    assetCode: 'assignment2',
+    assetId: 2,
+    assetName: 'asset2',
+    assignedById: 2,
+    assignedDate: '2024-12-22T13:32:33.076Z',
+    assignedToId: 2,
+    assignee: userDataMock[0],
+    assigner: userDataMock[0],
+    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    id: 1,
+    note: 'Note',
+    assignedByUsername: 'assignedByUsername',
+    assignedToUsername: 'assignedToUsername',
+    asset: assetDataMock[0],
   },
 ];
 
