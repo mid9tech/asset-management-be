@@ -81,6 +81,8 @@ export class AssignmentsResolver {
     return this.assetService.findOne(assignment.assetId, userReq.location);
   }
 
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(() => Assignment, { name: 'assignment' })
   findOne(
     @Args('id', { type: () => Int }) id: number,
