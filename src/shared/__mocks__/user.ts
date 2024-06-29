@@ -5,6 +5,7 @@ import {
 import { GENDER, LOCATION, USER_STATUS, USER_TYPE } from '../enums';
 import { CurrentUserInterface } from '../generics';
 import { User } from 'src/domains/users/entities/user.entity';
+import * as MyPrisma from '@prisma/client';
 
 // Adjust based on your Prisma schema
 export const userDataMock: User[] = [
@@ -277,4 +278,17 @@ export const currentUserMock: CurrentUserInterface = {
   state: USER_STATUS.ACTIVE,
   type: USER_TYPE.ADMIN,
   username: 'taylors',
+};
+
+export const userDataPrismaMock: MyPrisma.User = {
+  ...userDataMock[1],
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  salt: '1111',
+  isAssigned: false,
+  isDisabled: false,
+  refreshToken: '111111',
+  gender: GENDER.FEMALE,
+  joinedDate: new Date(),
+  dateOfBirth: new Date(),
 };

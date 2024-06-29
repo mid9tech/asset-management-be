@@ -6,6 +6,7 @@ import { ASSET_STATE, ASSIGNMENT_STATE, LOCATION } from 'src/shared/enums';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
+  MyForbiddenException,
 } from 'src/shared/exceptions';
 import { FindAssignmentsInput } from './dto/find-assignment.input';
 import { Prisma } from '@prisma/client';
@@ -21,29 +22,50 @@ export class AssignmentsService {
   ) {
     try {
       // if asset is already assigned for any user
-      const isAssetIsAssigned = await this.prismaService.asset.findFirst({
+      const checkAsset = await this.prismaService.asset.findFirst({
         where: {
           id: createAssignmentInput.assetId,
-          state: ASSET_STATE.ASSIGNED,
         },
       });
 
-      if (createAssignmentInput.assetId && isAssetIsAssigned) {
+      if (!checkAsset) {
+        throw new MyBadRequestException('invalid asset');
+      }
+
+      if (checkAsset.state === ASSET_STATE.ASSIGNED) {
         throw new MyBadRequestException(
           'Asset is already assigned for another user',
         );
       }
 
+      // if asset is from different location
+      if (checkAsset.location !== userReq.location) {
+        throw new MyForbiddenException(
+          'You are not allowed to assign asset from different location',
+        );
+      }
+
       // if user is already assigned
-      const isUserAlreadyAssigned = await this.prismaService.user.findFirst({
+      const checkUser = await this.prismaService.user.findFirst({
         where: {
           id: createAssignmentInput.assignedToId,
-          isAssigned: true,
+          isDisabled: false,
         },
       });
 
-      if (createAssignmentInput.assignedToId && isUserAlreadyAssigned) {
+      if (!checkUser) {
+        throw new MyBadRequestException('invalid user');
+      }
+
+      if (checkUser.isAssigned) {
         throw new MyBadRequestException('User is already assigned');
+      }
+
+      // if assignee from different location
+      if (checkUser.location !== userReq.location) {
+        throw new MyForbiddenException(
+          'You are not allowed to assign user from different location',
+        );
       }
 
       if (isNaN(Date.parse(createAssignmentInput.assignedDate))) {
@@ -82,17 +104,29 @@ export class AssignmentsService {
 
     const where: Prisma.AssignmentWhereInput = {};
 
-    if (state) {
-      where.state = state;
+    if (state && state.length > 0) {
+      where.state = { in: state };
     }
 
     if (query) {
+      const trimmedQuery = query.trim();
+      const words = trimmedQuery.split(' ').filter((word) => word.length > 0);
+
       where.OR = [
         { assetName: { contains: query, mode: 'insensitive' } },
         { assetCode: { contains: query, mode: 'insensitive' } },
         { assignedToUsername: { contains: query, mode: 'insensitive' } },
       ];
+
+      if (words.length > 1) {
+        where.OR.push({
+          AND: words.map((word) => ({
+            OR: [{ assetName: { contains: word, mode: 'insensitive' } }],
+          })),
+        });
+      }
     }
+
     if (assignedDate) {
       if (isNaN(Date.parse(assignedDate))) {
         throw new MyBadRequestException('assigned date is invalid');
