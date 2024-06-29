@@ -8,11 +8,15 @@ import {
   currentUserMock,
   findAssignmentInputMock,
   findAssignmentOutputMock,
+  assetDatePrismaMock,
+  userDataPrismaMock,
 } from 'src/shared/__mocks__';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
+  MyForbiddenException,
 } from 'src/shared/exceptions';
+import { ASSET_STATE, LOCATION } from 'src/shared/enums';
 
 describe('AssignmentsService', () => {
   let assignmentService: AssignmentsService;
@@ -39,36 +43,83 @@ describe('AssignmentsService', () => {
 
   describe('create', () => {
     it('should throw MyBadRequestException for invalid assetId', async () => {
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue(null);
+
       await expect(
         assignmentService.create(assignmentInputMock[0], currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+      ).rejects.toThrow(MyBadRequestException);
     });
 
-    it('should throw MyBadRequestException for invalid assetId', async () => {
+    it('should throw MyBadRequestException for asset is already assigned', async () => {
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue({
+        ...assetDatePrismaMock,
+        state: ASSET_STATE.ASSIGNED,
+      });
+
       await expect(
         assignmentService.create(assignmentInputMock[1], currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+      ).rejects.toThrow(MyBadRequestException);
     });
 
-    it('should throw MyBadRequestException for empty assetId', async () => {
+    it('should throw MyForbiddenException for asset is already from different location', async () => {
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue({
+        ...assetDatePrismaMock,
+        location: LOCATION.DN,
+      });
+
       await expect(
-        assignmentService.create(assignmentInputMock[2], currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+        assignmentService.create(assignmentInputMock[1], currentUserMock),
+      ).rejects.toThrow(MyForbiddenException);
     });
 
     it('should throw MyBadRequestException for empty assignedToId', async () => {
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue(null);
       await expect(
         assignmentService.create(assignmentInputMock[3], currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw MyBadRequestException for assignedToId is already assigned', async () => {
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue({
+        ...userDataPrismaMock,
+        isAssigned: true,
+      });
+
+      await expect(
+        assignmentService.create(assignmentInputMock[1], currentUserMock),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw MyForbiddenException for assignedToId is already from different location', async () => {
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue({
+        ...userDataPrismaMock,
+        location: LOCATION.DN,
+      });
+
+      jest.spyOn(prismaService.asset, 'findFirst').mockResolvedValue({
+        ...assetDatePrismaMock,
+      });
+
+      await expect(
+        assignmentService.create(assignmentInputMock[1], currentUserMock),
+      ).rejects.toThrow(MyForbiddenException);
     });
 
     it('should throw MyBadRequestException for invalid assignedDate', async () => {
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue({
+        ...userDataPrismaMock,
+      });
+
       await expect(
         assignmentService.create(assignmentInputMock[4], currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+      ).rejects.toThrow(MyBadRequestException);
     });
 
     it('should return new assignment', async () => {
+      jest.spyOn(prismaService.user, 'findFirst').mockResolvedValue({
+        ...userDataPrismaMock,
+      });
+
       const result = await assignmentService.create(
         assignmentInputMock[5],
         currentUserMock,
@@ -89,7 +140,7 @@ describe('AssignmentsService', () => {
       const input = findAssignmentInputMock[1];
       await expect(
         assignmentService.findAll(input, currentUserMock),
-      ).rejects.toThrowError(MyBadRequestException);
+      ).rejects.toThrow(MyBadRequestException);
     });
 
     it('limit empty but no affect to logical, should return paginated list of assignments', async () => {

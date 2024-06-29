@@ -54,17 +54,31 @@ export default class AssignmentsServiceMock {
 
         const where: Prisma.AssignmentWhereInput = {};
 
-        if (state) {
-          where.state = state;
+        if (state && state.length > 0) {
+          where.state = { in: state };
         }
 
         if (query) {
+          const trimmedQuery = query.trim();
+          const words = trimmedQuery
+            .split(' ')
+            .filter((word) => word.length > 0);
+
           where.OR = [
             { assetName: { contains: query, mode: 'insensitive' } },
             { assetCode: { contains: query, mode: 'insensitive' } },
             { assignedToUsername: { contains: query, mode: 'insensitive' } },
           ];
+
+          if (words.length > 1) {
+            where.OR.push({
+              AND: words.map((word) => ({
+                OR: [{ assetName: { contains: word, mode: 'insensitive' } }],
+              })),
+            });
+          }
         }
+
         if (assignedDate) {
           if (isNaN(Date.parse(assignedDate))) {
             throw new MyBadRequestException('assigned date is invalid');

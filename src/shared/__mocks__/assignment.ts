@@ -131,16 +131,16 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
     limit: 10,
     page: 1,
-    query: 'assignment',
+    query: 'assignment assignments',
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: 'invalidDate',
   },
   {
@@ -149,7 +149,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
@@ -158,7 +158,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
@@ -167,7 +167,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: undefined,
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
@@ -176,7 +176,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: undefined,
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
@@ -185,7 +185,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: 'assetName',
     sortOrder: undefined,
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: '2024-12-22T13:32:33.076Z',
   },
   {
@@ -203,7 +203,7 @@ export const findAssignmentInputMock: FindAssignmentsInput[] = [
     query: 'assignment',
     sort: 'assetName',
     sortOrder: 'asc',
-    state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+    state: [ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE],
     assignedDate: undefined,
   },
 ];

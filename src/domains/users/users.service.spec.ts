@@ -14,11 +14,11 @@ import {
   findUserInputMock,
   findUserOutputMock,
   userDataMock,
+  userDataPrismaMock,
   userInputMock,
 } from 'src/shared/__mocks__';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { LOCATION } from 'src/shared/enums';
-import { GENDER } from '@prisma/client';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -151,16 +151,7 @@ describe('UsersService', () => {
 
     it('should throw MyForbiddenException because edit ADMIN', async () => {
       jest.spyOn(prismaServiceMock.user, 'findFirst').mockResolvedValue({
-        ...userDataMock[1],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        salt: '1111',
-        isAssigned: true,
-        isDisabled: false,
-        refreshToken: '111111',
-        gender: GENDER.FEMALE,
-        joinedDate: new Date(),
-        dateOfBirth: new Date(),
+        ...userDataPrismaMock,
       });
       await expect(usersService.update(1, userInputMock[6])).rejects.toThrow(
         MyForbiddenException,

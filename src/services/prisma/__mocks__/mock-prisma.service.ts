@@ -24,7 +24,7 @@ export default class PrismaServiceMock {
   asset = {
     create: jest.fn().mockReturnValue(assetDataMock),
     update: jest.fn().mockReturnValue(assetDataMock),
-    findFirst: jest.fn().mockReturnValue(assetDataMock),
+    findFirst: jest.fn().mockReturnValue(assetDataMock[0]),
     findMany: jest.fn().mockReturnValue(assetDataMock),
     delete: jest.fn().mockReturnValue(assetDataMock),
     count: jest.fn().mockReturnValue(10),

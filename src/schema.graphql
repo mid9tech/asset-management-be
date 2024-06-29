@@ -113,7 +113,7 @@ input FindAssignmentsInput {
   limit: Int = 20
   query: String
   sortOrder: String = "asc"
-  state: String
+  state: [String!]
   sort: String = "assetName"
   assignedDate: String
 }
