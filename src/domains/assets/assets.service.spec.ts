@@ -319,7 +319,7 @@ describe('AssetsService', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
 
@@ -426,7 +426,7 @@ describe('AssetsService', () => {
         query: 'NonExistingAsset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
 

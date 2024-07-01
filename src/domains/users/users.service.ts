@@ -102,7 +102,7 @@ export class UsersService {
 
     const where: Prisma.UserWhereInput = {};
 
-    if (type && type.length > 0) {
+    if (type) {
       where.type = { in: type };
     }
     if (query) {
