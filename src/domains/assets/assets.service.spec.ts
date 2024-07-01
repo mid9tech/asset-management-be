@@ -498,6 +498,21 @@ describe('AssetsService', () => {
         new MyBadRequestException('Asset not found'),
       );
     });
+
+    it('should throw an error if asset is removed', async () => {
+      const removedAsset = {
+        ...existingAsset,
+        isRemoved: true,
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(removedAsset);
+
+      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset is removed'),
+      );
+    });
   });
 
   describe('generateAssetCode', () => {

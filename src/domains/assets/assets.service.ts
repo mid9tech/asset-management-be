@@ -173,6 +173,11 @@ export class AssetsService {
     if (asset.location !== location) {
       throw new MyBadRequestException('Asset not found in your location');
     }
+
+    if (asset.isRemoved === true) {
+      throw new MyBadRequestException('Asset is removed');
+    }
+
     const result = {
       ...asset,
       installedDate: asset.installedDate.toISOString(),

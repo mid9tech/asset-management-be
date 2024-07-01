@@ -19,6 +19,15 @@ export class Asset {
   @Field(() => String)
   installedDate: string;
 
+  @Field(() => Boolean)
+  isRemoved: boolean;
+
+  @Field(() => Boolean)
+  isAllowRemoved: boolean;
+
+  @Field(() => Boolean)
+  isReadyAssigned: boolean;
+
   @Field(() => String)
   @IsEnum(ASSET_STATE)
   state: string;

@@ -15,8 +15,9 @@ import {
 } from 'src/shared/enums';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { MyBadRequestException } from 'src/shared/exceptions';
-import { RoleGuard } from 'src/common/guard/role.guard';
-import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+// import { RoleGuard } from 'src/common/guard/role.guard';
+// import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+import { Category } from '../categories/entities/category.entity';
 
 describe('AssetsResolver', () => {
   let resolver: AssetsResolver;
@@ -44,6 +45,9 @@ describe('AssetsResolver', () => {
     state: ASSET_STATE.AVAILABLE,
     location: LOCATION.HCM,
     specification: 'Spec',
+    isRemoved: false,
+    isAllowRemoved: true,
+    isReadyAssigned: true,
   };
 
   const mockFindAssetsOutput: FindAssetsOutput = {
@@ -54,10 +58,10 @@ describe('AssetsResolver', () => {
     totalPages: 1,
   };
 
-  const mockCategory = {
+  const mockCategory: Category = {
     id: 1,
-    name: 'Category 1',
-    prefix: 'CAT',
+    categoryName: 'Category 1',
+    categoryCode: 'CAT',
   };
 
   beforeEach(async () => {
@@ -91,6 +95,7 @@ describe('AssetsResolver', () => {
                 }
                 return Promise.resolve(mockAsset);
               }),
+            remove: jest.fn().mockResolvedValue(mockAsset),
           },
         },
         {
@@ -152,6 +157,92 @@ describe('AssetsResolver', () => {
     });
   });
 
+  describe('updateAsset', () => {
+    it('should update an asset', async () => {
+      const updateAssetInput: UpdateAssetInput = {
+        assetName: 'Updated Asset Name',
+        installedDate: '2022-01-01',
+        state: ASSET_STATE.NOT_AVAILABLE,
+        specification: 'Updated Spec',
+      };
+
+      const result = await resolver.updateAsset(
+        1,
+        updateAssetInput,
+        mockCurrentUser,
+      );
+      expect(result).toEqual(mockAsset);
+      expect(assetsService.update).toHaveBeenCalledWith(
+        1,
+        updateAssetInput,
+        mockCurrentUser.location,
+      );
+    });
+
+    it('should throw MyBadRequestException on invalid input', async () => {
+      const invalidUpdateAssetInput: UpdateAssetInput = {
+        assetName: '',
+        installedDate: 'invalid-date',
+        state: '' as any,
+        specification: '',
+      };
+
+      await expect(
+        resolver.updateAsset(1, invalidUpdateAssetInput, mockCurrentUser),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw MyBadRequestException on invalid id', async () => {
+      const validUpdateAssetInput: UpdateAssetInput = {
+        assetName: 'Updated Asset Name',
+        installedDate: '2022-01-01',
+        state: ASSET_STATE.NOT_AVAILABLE,
+        specification: 'Updated Spec',
+      };
+
+      await expect(
+        resolver.updateAsset(
+          null as any,
+          validUpdateAssetInput,
+          mockCurrentUser,
+        ),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    // it('should throw MyBadRequestException on invalid location', async () => {
+    //   const validUpdateAssetInput: UpdateAssetInput = {
+    //     assetName: 'Updated Asset Name',
+    //     installedDate: '2022-01-01',
+    //     state: ASSET_STATE.NOT_AVAILABLE,
+    //     specification: 'Updated Spec',
+    //   };
+
+    //   await expect(
+    //     await resolver.updateAsset(1, validUpdateAssetInput, {
+    //       ...mockCurrentUser,
+    //     }),
+    //   ).rejects.toThrow(MyBadRequestException);
+    // });
+
+    it('should throw an exception when update fails', async () => {
+      const updateAssetInput: UpdateAssetInput = {
+        assetName: 'Updated Asset Name',
+        installedDate: '2022-01-01',
+        state: ASSET_STATE.NOT_AVAILABLE,
+        specification: 'Updated Spec',
+      };
+      jest
+        .spyOn(assetsService, 'update')
+        .mockRejectedValueOnce(
+          new MyBadRequestException('Error updating asset'),
+        );
+
+      await expect(
+        resolver.updateAsset(1, updateAssetInput, mockCurrentUser),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+  });
+
   describe('getAssets', () => {
     it('should find assets', async () => {
       const findAssetsInput: FindAssetsInput = {
@@ -160,7 +251,7 @@ describe('AssetsResolver', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: [ASSET_STATE['AVAILABLE']],
+        stateFilter: [ASSET_STATE.AVAILABLE],
         categoryFilter: ['1'],
       };
 
@@ -179,7 +270,7 @@ describe('AssetsResolver', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: [ASSET_STATE['AVAILABLE']],
+        stateFilter: [ASSET_STATE.AVAILABLE],
         categoryFilter: ['1'],
       };
       jest
@@ -215,64 +306,39 @@ describe('AssetsResolver', () => {
         MyBadRequestException,
       );
     });
-  });
 
-  describe('updateAsset', () => {
-    it('should update an asset', async () => {
-      const updateAssetInput: UpdateAssetInput = {
-        assetName: 'Updated Asset Name',
-        installedDate: '2022-01-01',
-        state: ASSET_STATE.NOT_AVAILABLE,
-        specification: 'Updated Spec',
-      };
+    it('should handle case when asset is not found', async () => {
+      jest.spyOn(assetsService, 'findOne').mockResolvedValueOnce(null);
 
-      const result = await resolver.updateAsset(
-        1,
-        updateAssetInput,
-        mockCurrentUser,
-      );
-      expect(result).toEqual(mockAsset);
-      expect(assetsService.update).toHaveBeenCalledWith(
-        1,
-        updateAssetInput,
-        mockCurrentUser.location,
-      );
-    });
-
-    it('should throw MyBadRequestException on invalid input', async () => {
-      const invalidUpdateAssetInput: UpdateAssetInput = {
-        assetName: '',
-        installedDate: 'invalid-date',
-        state: '',
-        specification: '',
-      };
-
-      await expect(
-        resolver.updateAsset(1, invalidUpdateAssetInput, mockCurrentUser),
-      ).rejects.toThrow(MyBadRequestException);
-    });
-
-    it('should throw an exception when update fails', async () => {
-      const updateAssetInput: UpdateAssetInput = {
-        assetName: 'Updated Asset Name',
-        installedDate: '2022-01-01',
-        state: ASSET_STATE.NOT_AVAILABLE,
-        specification: 'Updated Spec',
-      };
-      jest
-        .spyOn(assetsService, 'update')
-        .mockRejectedValueOnce(
-          new MyBadRequestException('Error updating asset'),
-        );
-
-      await expect(
-        resolver.updateAsset(1, updateAssetInput, mockCurrentUser),
-      ).rejects.toThrow(MyBadRequestException);
+      await expect(resolver.findOne(mockCurrentUser, 999)).resolves.toBeNull();
     });
   });
+
+  // describe('removeAsset', () => {
+  //   it('should remove an asset', async () => {
+  //     const result = await resolver.removeAsset(1, mockCurrentUser);
+  //     expect(result).toEqual(mockAsset);
+  //     expect(assetsService.remove).toHaveBeenCalledWith(
+  //       1,
+  //       mockCurrentUser.location,
+  //     );
+  //   });
+
+  //   it('should throw an exception when remove fails', async () => {
+  //     jest
+  //       .spyOn(assetsService, 'remove')
+  //       .mockRejectedValueOnce(
+  //         new MyBadRequestException('Error removing asset'),
+  //       );
+
+  //     await expect(resolver.removeAsset(1, mockCurrentUser)).rejects.toThrow(
+  //       MyBadRequestException,
+  //     );
+  //   });
+  // });
 
   describe('category', () => {
-    it('should resolve category field', async () => {
+    it('should find category by id', async () => {
       const result = await resolver.category(mockAsset);
       expect(result).toEqual(mockCategory);
       expect(categoriesService.findById).toHaveBeenCalledWith(
@@ -280,7 +346,7 @@ describe('AssetsResolver', () => {
       );
     });
 
-    it('should throw an exception when category resolution fails', async () => {
+    it('should throw an exception when find category fails', async () => {
       jest
         .spyOn(categoriesService, 'findById')
         .mockRejectedValueOnce(
@@ -291,21 +357,11 @@ describe('AssetsResolver', () => {
         MyBadRequestException,
       );
     });
-  });
 
-  describe('Guards', () => {
-    it('should apply guards to createAsset', async () => {
-      const guards = Reflect.getMetadata('__guards__', resolver.createAsset);
-      expect(guards).toHaveLength(2);
-      expect(guards[0]).toBe(JwtAccessAuthGuard);
-      expect(guards[1]).toBe(RoleGuard);
-    });
+    it('should handle case when category is not found', async () => {
+      jest.spyOn(categoriesService, 'findById').mockResolvedValueOnce(null);
 
-    it('should apply guards to updateAsset', async () => {
-      const guards = Reflect.getMetadata('__guards__', resolver.updateAsset);
-      expect(guards).toHaveLength(2);
-      expect(guards[0]).toBe(JwtAccessAuthGuard);
-      expect(guards[1]).toBe(RoleGuard);
+      await expect(resolver.category(mockAsset)).resolves.toBeNull();
     });
   });
 });

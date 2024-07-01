@@ -12,6 +12,9 @@ export const assetDataMock: Asset[] = [
     location: LOCATION.HCM,
     specification: 'assignment',
     state: ASSET_STATE.AVAILABLE,
+    isRemoved: false,
+    isAllowRemoved: true,
+    isReadyAssigned: true,
   },
 ];
 
