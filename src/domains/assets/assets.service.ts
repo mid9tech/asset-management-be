@@ -189,5 +189,5 @@ export class AssetsService {
     return assetCode;
   }
 
-  async remove(id: number, location: LOCATION) {}
+  // async remove(id: number, location: LOCATION) {}
 }
