@@ -82,13 +82,13 @@ export class AssetsResolver {
     return await this.categoryService.findById(asset.categoryId);
   }
 
-  // @Roles(USER_TYPE.ADMIN)
-  // @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  // @Mutation(() => Asset)
-  // async removeAsset(
-  //   @Args('id', { type: () => Int }) id: number,
-  //   @CurrentUser() userReq: CurrentUserInterface,
-  // ) {
-  //   return await this.assetsService.remove(id, userReq.location);
-  // }
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(() => Asset, { name: 'deleteAsset' })
+  async removeAsset(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.assetsService.remove(id, userReq.location);
+  }
 }

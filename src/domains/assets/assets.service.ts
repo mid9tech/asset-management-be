@@ -130,6 +130,8 @@ export class AssetsService {
       where.categoryId = { in: categoryFilter.map((id) => parseInt(id)) };
     }
 
+    where.isRemoved = false;
+
     try {
       const total = await this.prismaService.asset.count({ where });
 
@@ -189,5 +191,31 @@ export class AssetsService {
     return assetCode;
   }
 
-  // async remove(id: number, location: LOCATION) {}
+  async remove(id: number, location: LOCATION) {
+    const asset = await this.prismaService.asset.findUnique({
+      where: { id },
+    });
+    if (!asset) {
+      throw new MyBadRequestException('Asset not found');
+    }
+    if (asset.location !== location) {
+      throw new MyBadRequestException('Asset not found in your location');
+    }
+    if (asset.state === ASSET_STATE.ASSIGNED) {
+      throw new MyBadRequestException('Can not delete ! Asset is assigned');
+    }
+
+    //check if asset exist in the assignment lists then can not delete
+    if (asset.isAllowRemoved === false) {
+      throw new MyBadRequestException(
+        'Cannot delete the asset because it belongs to one or more historical assignments.',
+      );
+    }
+    //update the isRemoved field to true
+    const result = await this.prismaService.asset.update({
+      where: { id },
+      data: { isRemoved: true },
+    });
+    return result;
+  }
 }
