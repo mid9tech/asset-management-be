@@ -21,6 +21,8 @@ export const assetDatePrismaMock: MyPrisma.Asset = {
   createdAt: new Date(),
   updatedAt: new Date(),
   isRemoved: false,
+  isAllowRemoved: true,
+  isReadyAssigned: true,
   state: ASSET_STATE.AVAILABLE,
   location: LOCATION.HCM,
 };
