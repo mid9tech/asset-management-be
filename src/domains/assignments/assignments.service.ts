@@ -72,6 +72,13 @@ export class AssignmentsService {
         throw new MyBadRequestException('assigned date is invalid');
       }
 
+      await this.prismaService.asset.update({
+        where: { id: createAssignmentInput.assetId },
+        data: {
+          isAllowRemoved: false,
+        },
+      });
+
       const result = await this.prismaService.assignment.create({
         data: {
           ...createAssignmentInput,

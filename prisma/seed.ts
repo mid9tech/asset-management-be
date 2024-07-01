@@ -1,4 +1,10 @@
-import { PrismaClient, GENDER, LOCATION, USER_TYPE } from '@prisma/client';
+import {
+  PrismaClient,
+  GENDER,
+  LOCATION,
+  USER_TYPE,
+  ASSET_STATE,
+} from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import {
   GenSalt,
@@ -21,6 +27,44 @@ function addYears(date: Date, years: number): Date {
   const result = new Date(date);
   result.setFullYear(result.getFullYear() + years);
   return result;
+}
+
+async function createUser() {
+  const validDOB = generateValidDOB();
+  return prisma.user.create({
+    data: {
+      firstName: faker.name.firstName(),
+      lastName: faker.name.lastName(),
+      gender: faker.helpers.arrayElement([GENDER.MALE, GENDER.FEMALE]),
+      dateOfBirth: validDOB,
+      joinedDate: addYears(validDOB, 18),
+      type: faker.helpers.arrayElement([USER_TYPE.USER, USER_TYPE.ADMIN]),
+      location: faker.helpers.arrayElement([
+        LOCATION.HN,
+        LOCATION.HCM,
+        LOCATION.DN,
+      ]),
+      state: false,
+    },
+  });
+}
+
+async function createAsset(category, count) {
+  return prisma.asset.create({
+    data: {
+      assetCode: category.categoryCode + '0000' + count,
+      assetName: faker.commerce.productName(),
+      categoryId: category.id,
+      installedDate: faker.date.past(2),
+      state: ASSET_STATE.AVAILABLE,
+      location: faker.helpers.arrayElement([
+        LOCATION.HN,
+        LOCATION.HCM,
+        LOCATION.DN,
+      ]),
+      specification: faker.commerce.productDescription(),
+    },
+  });
 }
 
 async function main() {
@@ -50,7 +94,7 @@ async function main() {
     return next(params);
   });
 
-  // Upsert Admin
+  // Upsert Admins
   const admins = [];
 
   const validDOB = generateValidDOB();
@@ -99,6 +143,48 @@ async function main() {
       },
     }),
   );
+
+  // Seed Users
+  for (let i = 0; i < 200; i++) {
+    await createUser();
+  }
+
+  // Create a category to use for assets
+  const category = [];
+
+  category.push(
+    await prisma.category.create({
+      data: {
+        categoryName: 'Electronics',
+        categoryCode: 'EL',
+      },
+    }),
+  );
+
+  category.push(
+    await prisma.category.create({
+      data: {
+        categoryName: 'Laptop',
+        categoryCode: 'LT',
+      },
+    }),
+  );
+
+  category.push(
+    await prisma.category.create({
+      data: {
+        categoryName: 'Telephone',
+        categoryCode: 'TP',
+      },
+    }),
+  );
+
+  // Seed Assets
+  const assetPromises = [];
+  for (let i = 0; i < 200; i++) {
+    assetPromises.push(createAsset(category[i % 2], i + 1));
+  }
+  await Promise.all(assetPromises);
 }
 
 main()
