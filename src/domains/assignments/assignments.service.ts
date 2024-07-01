@@ -32,9 +32,17 @@ export class AssignmentsService {
         throw new MyBadRequestException('invalid asset');
       }
 
-      if (checkAsset.state === ASSET_STATE.ASSIGNED) {
-        throw new MyBadRequestException(
-          'Asset is already assigned for another user',
+      if (
+        checkAsset.state !== ASSET_STATE.AVAILABLE ||
+        checkAsset.isReadyAssigned === false
+      ) {
+        throw new MyBadRequestException('Asset is not ready to be assigned');
+      }
+
+      // if asset is from different location
+      if (checkAsset.location !== userReq.location) {
+        throw new MyForbiddenException(
+          'You are not allowed to assign asset from different location',
         );
       }
 
@@ -72,6 +80,14 @@ export class AssignmentsService {
         throw new MyBadRequestException('assigned date is invalid');
       }
 
+      await this.prismaService.asset.update({
+        where: { id: createAssignmentInput.assetId },
+        data: {
+          isAllowRemoved: false,
+          isReadyAssigned: false,
+        },
+      });
+
       const result = await this.prismaService.assignment.create({
         data: {
           ...createAssignmentInput,
@@ -103,8 +119,7 @@ export class AssignmentsService {
     } = input;
 
     const where: Prisma.AssignmentWhereInput = {};
-
-    if (state && state.length > 0) {
+    if (state) {
       where.state = { in: state };
     }
 

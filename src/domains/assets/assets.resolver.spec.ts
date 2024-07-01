@@ -160,7 +160,7 @@ describe('AssetsResolver', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
 
@@ -179,7 +179,7 @@ describe('AssetsResolver', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
       jest

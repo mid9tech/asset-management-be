@@ -71,6 +71,8 @@ describe('AssetsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         isRemoved: false,
+        isAllowRemoved: true,
+        isReadyAssigned: true,
       });
 
       const result = await service.create(createAssetInput, LOCATION.HCM);
@@ -84,6 +86,8 @@ describe('AssetsService', () => {
         updatedAt: expect.any(Date),
         createdAt: expect.any(Date),
         isRemoved: false,
+        isAllowRemoved: true,
+        isReadyAssigned: true,
       });
     });
 
@@ -116,6 +120,8 @@ describe('AssetsService', () => {
       location: LOCATION.HCM,
       specification: 'Spec',
       isRemoved: false,
+      isAllowRemoved: true,
+      isReadyAssigned: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -129,6 +135,8 @@ describe('AssetsService', () => {
       location: LOCATION.HCM,
       specification: 'Updated Spec',
       isRemoved: false,
+      isAllowRemoved: true,
+      isReadyAssigned: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -311,7 +319,7 @@ describe('AssetsService', () => {
         query: 'Asset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
 
@@ -418,7 +426,7 @@ describe('AssetsService', () => {
         query: 'NonExistingAsset',
         sortField: 'assetCode',
         sortOrder: 'asc',
-        stateFilter: ['AVAILABLE'],
+        stateFilter: [ASSET_STATE['AVAILABLE']],
         categoryFilter: ['1'],
       };
 
@@ -450,6 +458,8 @@ describe('AssetsService', () => {
       isRemoved: false,
       createdAt: new Date(),
       updatedAt: new Date(),
+      isAllowRemoved: true,
+      isReadyAssigned: true,
     };
 
     it('should find one asset successfully', async () => {
@@ -468,6 +478,8 @@ describe('AssetsService', () => {
       const assetInDifferentLocation = {
         ...existingAsset,
         location: LOCATION.HN,
+        isAllowRemoved: true,
+        isReadyAssigned: true,
       };
 
       jest
