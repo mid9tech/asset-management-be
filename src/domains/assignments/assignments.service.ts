@@ -112,8 +112,7 @@ export class AssignmentsService {
     } = input;
 
     const where: Prisma.AssignmentWhereInput = {};
-
-    if (state && state.length > 0) {
+    if (state) {
       where.state = { in: state };
     }
 
