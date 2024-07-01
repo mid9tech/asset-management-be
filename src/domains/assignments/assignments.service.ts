@@ -46,6 +46,13 @@ export class AssignmentsService {
         );
       }
 
+      // if asset is from different location
+      if (checkAsset.location !== userReq.location) {
+        throw new MyForbiddenException(
+          'You are not allowed to assign asset from different location',
+        );
+      }
+
       // if user is already assigned
       const checkUser = await this.prismaService.user.findFirst({
         where: {
