@@ -32,10 +32,11 @@ export class AssignmentsService {
         throw new MyBadRequestException('invalid asset');
       }
 
-      if (checkAsset.state === ASSET_STATE.ASSIGNED) {
-        throw new MyBadRequestException(
-          'Asset is already assigned for another user',
-        );
+      if (
+        checkAsset.state !== ASSET_STATE.AVAILABLE ||
+        checkAsset.isReadyAssigned === false
+      ) {
+        throw new MyBadRequestException('Asset is not ready to be assigned');
       }
 
       // if asset is from different location
@@ -76,6 +77,7 @@ export class AssignmentsService {
         where: { id: createAssignmentInput.assetId },
         data: {
           isAllowRemoved: false,
+          isReadyAssigned: false,
         },
       });
 

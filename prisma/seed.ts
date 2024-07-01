@@ -33,8 +33,8 @@ async function createUser() {
   const validDOB = generateValidDOB();
   return prisma.user.create({
     data: {
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
       gender: faker.helpers.arrayElement([GENDER.MALE, GENDER.FEMALE]),
       dateOfBirth: validDOB,
       joinedDate: addYears(validDOB, 18),

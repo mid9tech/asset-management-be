@@ -116,21 +116,21 @@ model Assignment {
 }
 
 model Asset {
-  id             Int          @id @default(autoincrement())
-  assetCode      String       @unique
-  assetName      String
-  category       Category     @relation(fields: [categoryId], references: [id])
-  categoryId     Int
-  installedDate  DateTime
-  state          ASSET_STATE  @default(AVAILABLE)
-  location       LOCATION     @default(HCM)
-  specification  String?
-  isRemoved      Boolean      @default(false)
-  isAllowRemoved Boolean      @default(true)
-  isReady        Boolean      @default(true)
-  assignments    Assignment[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id              Int          @id @default(autoincrement())
+  assetCode       String       @unique
+  assetName       String
+  category        Category     @relation(fields: [categoryId], references: [id])
+  categoryId      Int
+  installedDate   DateTime
+  state           ASSET_STATE  @default(AVAILABLE)
+  location        LOCATION     @default(HCM)
+  specification   String?
+  isRemoved       Boolean      @default(false)
+  isAllowRemoved  Boolean      @default(true)
+  isReadyAssigned Boolean      @default(true)
+  assignments     Assignment[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model Category {
