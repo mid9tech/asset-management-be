@@ -30,6 +30,9 @@ type Asset {
   assetName: String!
   categoryId: Int!
   installedDate: String!
+  isRemoved: Boolean!
+  isAllowRemoved: Boolean!
+  isReadyAssigned: Boolean!
   state: String!
   location: String!
   specification: String
@@ -124,7 +127,6 @@ type Mutation {
   disableUser(id: Int!): Boolean!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
-  removeAsset(id: Int!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
   createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!

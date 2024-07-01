@@ -49,10 +49,11 @@ async function createUser() {
   });
 }
 
-async function createAsset(category, count) {
-  return prisma.asset.create({
+async function createAsset(category, prefix, lastAsset) {
+  const assetCode = `${prefix}${lastAsset.toString().padStart(6, '0')}`;
+  return await prisma.asset.create({
     data: {
-      assetCode: category.categoryCode + '0000' + count,
+      assetCode: assetCode,
       assetName: faker.commerce.productName(),
       categoryId: category.id,
       installedDate: faker.date.past(2),
@@ -182,7 +183,9 @@ async function main() {
   // Seed Assets
   const assetPromises = [];
   for (let i = 0; i < 200; i++) {
-    assetPromises.push(createAsset(category[i % 2], i + 1));
+    assetPromises.push(
+      await createAsset(category[i % 3], category[i % 3].categoryCode, i + 1),
+    );
   }
   await Promise.all(assetPromises);
 }

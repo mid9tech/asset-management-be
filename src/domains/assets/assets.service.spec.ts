@@ -498,6 +498,21 @@ describe('AssetsService', () => {
         new MyBadRequestException('Asset not found'),
       );
     });
+
+    it('should throw an error if asset is removed', async () => {
+      const removedAsset = {
+        ...existingAsset,
+        isRemoved: true,
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(removedAsset);
+
+      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset is removed'),
+      );
+    });
   });
 
   describe('generateAssetCode', () => {
@@ -520,6 +535,107 @@ describe('AssetsService', () => {
 
       const result = await service.generateAssetCode(1);
       expect(result).toEqual('CAT000001');
+    });
+  });
+  describe('remove', () => {
+    const existingAsset = {
+      id: 1,
+      assetCode: 'ASSET001',
+      assetName: 'Asset 1',
+      categoryId: 1,
+      installedDate: new Date('2021-01-01'),
+      state: ASSET_STATE.AVAILABLE,
+      location: LOCATION.HCM,
+      specification: 'Spec',
+      isRemoved: false,
+      isAllowRemoved: true,
+      isReadyAssigned: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it('should remove an asset successfully', async () => {
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(existingAsset);
+      jest.spyOn(prismaService.asset, 'update').mockResolvedValue({
+        ...existingAsset,
+        isRemoved: true,
+      });
+
+      const result = await service.remove(1, LOCATION.HCM);
+      expect(result).toEqual({
+        ...existingAsset,
+        isRemoved: true,
+      });
+    });
+
+    it('should throw an error if asset is not found', async () => {
+      jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(null);
+
+      await expect(service.remove(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset not found'),
+      );
+    });
+
+    it('should throw an error if asset is not found in the specified location', async () => {
+      const assetInDifferentLocation = {
+        ...existingAsset,
+        location: LOCATION.HN,
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(assetInDifferentLocation);
+
+      await expect(service.remove(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset not found in your location'),
+      );
+    });
+
+    it('should throw an error if asset is assigned', async () => {
+      const assignedAsset = {
+        ...existingAsset,
+        state: ASSET_STATE.ASSIGNED,
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(assignedAsset);
+
+      await expect(service.remove(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Can not delete ! Asset is assigned'),
+      );
+    });
+
+    it('should throw an error if asset belongs to historical assignments and cannot be deleted', async () => {
+      const historicalAssignmentAsset = {
+        ...existingAsset,
+        isAllowRemoved: false,
+      };
+
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(historicalAssignmentAsset);
+
+      await expect(service.remove(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException(
+          'Cannot delete the asset because it belongs to one or more historical assignments.',
+        ),
+      );
+    });
+
+    it('should update the isRemoved field to true upon removal', async () => {
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(existingAsset);
+      jest.spyOn(prismaService.asset, 'update').mockResolvedValue({
+        ...existingAsset,
+        isRemoved: true,
+      });
+
+      const result = await service.remove(1, LOCATION.HCM);
+      expect(result.isRemoved).toBe(true);
     });
   });
 });
