@@ -81,4 +81,14 @@ export class AssetsResolver {
   async category(@Parent() asset: Asset) {
     return await this.categoryService.findById(asset.categoryId);
   }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(() => Asset)
+  async removeAsset(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.assetsService.remove(id, userReq.location);
+  }
 }

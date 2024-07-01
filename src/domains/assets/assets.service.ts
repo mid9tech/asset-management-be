@@ -123,7 +123,7 @@ export class AssetsService {
     }
 
     if (stateFilter) {
-      where.state = { in: stateFilter.map((state) => ASSET_STATE[state]) };
+      where.state = { in: stateFilter };
     }
 
     if (categoryFilter) {
@@ -188,4 +188,6 @@ export class AssetsService {
     const assetCode = `${prefix}${newId.toString().padStart(6, '0')}`;
     return assetCode;
   }
+
+  async remove(id: number, location: LOCATION) {}
 }
