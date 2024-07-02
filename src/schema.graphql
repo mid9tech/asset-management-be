@@ -76,8 +76,23 @@ type FindAssignmentsOutput {
 }
 
 type RequestReturn {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  assetId: Int!
+  assignmentId: Int!
+  requestedById: Int!
+  acceptedById: Int!
+  assignedDate: String!
+  returnedDate: String!
+  state: String!
+  isRemoved: Boolean!
+}
+
+type FindRequestReturnsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  requestReturns: [RequestReturn!]!
 }
 
 type Query {
@@ -89,8 +104,8 @@ type Query {
   findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
   getListOwnAssignment(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
-  requestReturns: [RequestReturn!]!
-  requestReturn(id: Int!): RequestReturn!
+  findRequestReturns(request: FindRequestReturnsInput!): FindRequestReturnsOutput!
+  findOneRequestReturn(id: Int!): RequestReturn!
 }
 
 input FindUsersInput {
@@ -122,6 +137,16 @@ input FindAssignmentsInput {
   assignedDate: String
 }
 
+input FindRequestReturnsInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  sortField: String = "id"
+  stateFilter: [String!]
+  returnedDateFilter: String
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
@@ -134,9 +159,9 @@ type Mutation {
   removeAssignment(id: Int!): Boolean!
   updateAssignment(id: Int!, updateAssignmentInput: UpdateAssignmentInput!): Boolean!
   updateStatusAssignment(updateStatusAssignmentInput: UpdateStatusAssignmentInput!): Boolean!
-  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
-  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
-  removeRequestReturn(id: Int!): RequestReturn!
+  createRequestReturn(request: CreateRequestReturnInput!): RequestReturn!
+  completeRequestReturn(id: Int!): RequestReturn!
+  deleteRequestReturn(id: Int!): RequestReturn!
 }
 
 input CreateUserInput {
@@ -221,12 +246,8 @@ input UpdateStatusAssignmentInput {
 }
 
 input CreateRequestReturnInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateRequestReturnInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  assetId: Int!
+  assignmentId: Int!
+  requestedById: Int!
+  assignedDate: String!
 }

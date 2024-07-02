@@ -1,44 +1,77 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { RequestReturnsService } from './request-returns.service';
 import { RequestReturn } from './entities/request-return.entity';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import { USER_TYPE } from '@prisma/client';
+import { UseGuards } from '@nestjs/common';
+import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+import { RoleGuard } from 'src/common/guard/role.guard';
+import { CurrentUserInterface } from 'src/shared/generics';
+import { FindRequestReturnsInput } from './dto/find-request-returns.input';
+import {
+  returningFindRequestReturnsOutput,
+  returningRequestReturns,
+} from './returns';
+import { returningInt } from 'src/shared/constants';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
-import { UpdateRequestReturnInput } from './dto/update-request-return.input';
 
 @Resolver(() => RequestReturn)
 export class RequestReturnsResolver {
   constructor(private readonly requestReturnsService: RequestReturnsService) {}
 
-  @Mutation(() => RequestReturn)
-  createRequestReturn(
-    @Args('createRequestReturnInput')
-    createRequestReturnInput: CreateRequestReturnInput,
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Query(returningFindRequestReturnsOutput, { name: 'findRequestReturns' })
+  async getRequestReturns(
+    @CurrentUser() userReq: CurrentUserInterface,
+    @Args('request') request: FindRequestReturnsInput,
   ) {
-    return this.requestReturnsService.create(createRequestReturnInput);
+    const location = userReq.location;
+    return this.requestReturnsService.findRequestReturns(request, location);
   }
 
-  @Query(() => [RequestReturn], { name: 'requestReturns' })
-  findAll() {
-    return this.requestReturnsService.findAll();
-  }
-
-  @Query(() => RequestReturn, { name: 'requestReturn' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.requestReturnsService.findOne(id);
-  }
-
-  @Mutation(() => RequestReturn)
-  updateRequestReturn(
-    @Args('updateRequestReturnInput')
-    updateRequestReturnInput: UpdateRequestReturnInput,
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Query(returningRequestReturns, { name: 'findOneRequestReturn' })
+  async findOne(
+    @CurrentUser() userReq: CurrentUserInterface,
+    @Args('id', { type: returningInt }) id: number,
   ) {
-    return this.requestReturnsService.update(
-      updateRequestReturnInput.id,
-      updateRequestReturnInput,
+    const location = userReq.location;
+    return await this.requestReturnsService.findOne(id, location);
+  }
+
+  @UseGuards(JwtAccessAuthGuard)
+  @Mutation(returningRequestReturns, { name: 'createRequestReturn' })
+  async createRequestReturn(
+    @CurrentUser() userReq: CurrentUserInterface,
+    @Args('request') request: CreateRequestReturnInput,
+  ) {
+    const location = userReq.location;
+    return this.requestReturnsService.createRequestReturn(request, location);
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(returningRequestReturns, { name: 'completeRequestReturn' })
+  async completeRequestReturn(
+    @CurrentUser() userReq: CurrentUserInterface,
+    @Args('id', { type: returningInt }) id: number,
+  ) {
+    return this.requestReturnsService.completeRequestReturn(
+      id,
+      userReq.location,
+      userReq.id,
     );
   }
 
-  @Mutation(() => RequestReturn)
-  removeRequestReturn(@Args('id', { type: () => Int }) id: number) {
-    return this.requestReturnsService.remove(id);
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Mutation(returningRequestReturns, { name: 'deleteRequestReturn' })
+  async deleteRequestReturn(
+    @CurrentUser() userReq: CurrentUserInterface,
+    @Args('id', { type: returningInt }) id: number,
+  ) {
+    return this.requestReturnsService.deleteRequestReturn(id, userReq.location);
   }
 }
