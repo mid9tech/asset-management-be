@@ -88,7 +88,7 @@ type Query {
   getCategories: [Category!]!
   findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
-  getListOwnAssignment(findAssignmentsInput: FindAssignmentsInput!): Boolean!
+  getListOwnAssignment(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
 }

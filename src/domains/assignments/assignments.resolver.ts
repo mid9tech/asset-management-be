@@ -117,7 +117,7 @@ export class AssignmentsResolver {
   }
 
   @UseGuards(JwtAccessAuthGuard)
-  @Query(returningBoolean)
+  @Query(returningFindAssignmentsOutput)
   getListOwnAssignment(
     @Args('findAssignmentsInput') findAssignmentsInput: FindAssignmentsInput,
     @CurrentUser() userReq: CurrentUserInterface,
