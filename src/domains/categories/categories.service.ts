@@ -82,12 +82,7 @@ export class CategoriesService {
   }
 
   async getReport(reportInput: ReportInput) {
-    const {
-      limit = 20,
-      page = 1,
-      sort = 'categoryName',
-      sortOrder = 'asc',
-    } = reportInput;
+    const { limit, page, sort, sortOrder } = reportInput;
 
     const offset = (page - 1) * limit;
 
@@ -96,16 +91,12 @@ export class CategoriesService {
         { count: number }[]
       >`SELECT COUNT(*)::INTEGER as count FROM asset_report`;
 
-      /* const reportData = await this.prismaService.$queryRaw<
+      const reportData = await this.prismaService.$queryRaw<
         any[]
       >`SELECT * FROM asset_report
           ORDER BY ${Prisma.raw(sort)} ${Prisma.raw(sortOrder)}
           LIMIT ${Prisma.raw(limit.toString())}
-          OFFSET ${Prisma.raw(offset.toString())}`; */
-
-      const reportData = await this.prismaService.$queryRaw<
-        any[]
-      >`SELECT * from asset_report`;
+          OFFSET ${Prisma.raw(offset.toString())}`;
 
       return {
         total: totalItems[0].count,

@@ -4,7 +4,7 @@ import { BasePagingResponse } from 'src/shared/generics';
 @ObjectType()
 export class ReportElement {
   @Field()
-  categoryName: string;
+  category_name: string;
 
   @Field(() => Int)
   total: number;
@@ -16,10 +16,10 @@ export class ReportElement {
   available: number;
 
   @Field(() => Int)
-  notAvailable: number;
+  not_available: number;
 
   @Field(() => Int)
-  waitingForRecycling: number;
+  waiting_for_recycling: number;
 
   @Field(() => Int)
   recycled: number;

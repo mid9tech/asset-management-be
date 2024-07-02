@@ -54,12 +54,12 @@ type Category {
 }
 
 type ReportElement {
-  categoryName: String!
+  category_name: String!
   total: Int!
   assigned: Int!
   available: Int!
-  notAvailable: Int!
-  waitingForRecycling: Int!
+  not_available: Int!
+  waiting_for_recycling: Int!
   recycled: Int!
 }
 
@@ -147,10 +147,10 @@ input FindAssetsInput {
 }
 
 input ReportInput {
-  page: Int = 1
-  limit: Int = 20
+  page: Int
+  limit: Int
   sortOrder: String = "asc"
-  sort: String = "categoryName"
+  sort: String = "category_name"
 }
 
 input FindAssignmentsInput {
