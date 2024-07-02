@@ -1,4 +1,7 @@
-import { MyBadRequestException } from 'src/shared/exceptions';
+import {
+  MyBadRequestException,
+  MyEntityNotFoundException,
+} from 'src/shared/exceptions';
 import {
   assignmentDataMock,
   findAssignmentOutputMock,
@@ -7,6 +10,11 @@ import { CurrentUserInterface } from 'src/shared/generics';
 import { Prisma } from '@prisma/client';
 import { CreateAssignmentInput } from '../dto/create-assignment.input';
 import { FindAssignmentsInput } from '../dto/find-assignment.input';
+import { ENTITY_NAME } from 'src/shared/constants';
+import {
+  UpdateAssignmentInput,
+  UpdateStatusAssignmentInput,
+} from '../dto/update-assignment.input';
 
 export default class AssignmentsServiceMock {
   create = jest
@@ -98,4 +106,59 @@ export default class AssignmentsServiceMock {
   findOne = jest.fn().mockImplementation((id: number) => {
     return id === 1 ? assignmentDataMock[0] : null;
   });
+
+  update = jest
+    .fn()
+    .mockImplementation(
+      (
+        id: number,
+        updateAssignmentInput: UpdateAssignmentInput,
+        userReq: CurrentUserInterface,
+      ) => {
+        if (!id || !userReq || !updateAssignmentInput) {
+          throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
+        }
+
+        return assignmentDataMock[0];
+      },
+    );
+
+  removeAssignment = jest
+    .fn()
+    .mockImplementation(
+      (assignmentId: number, userReq: CurrentUserInterface) => {
+        if (!assignmentId || !userReq) {
+          throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
+        }
+
+        return true;
+      },
+    );
+
+  getListOwnAssignment = jest
+    .fn()
+    .mockImplementation(
+      (input: FindAssignmentsInput, reqUser: CurrentUserInterface) => {
+        if (!input || !reqUser) {
+          throw new MyBadRequestException('Some thing went wrong');
+        }
+
+        return assignmentDataMock;
+      },
+    );
+
+  updateStatusAssignment = jest
+    .fn()
+    .mockImplementation(
+      (
+        updateStatusAssignmentInput: UpdateStatusAssignmentInput,
+        userReq: CurrentUserInterface,
+      ) => {
+        if (!updateStatusAssignmentInput || !userReq) {
+          throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
+        }
+
+        return true;
+      },
+    );
 }

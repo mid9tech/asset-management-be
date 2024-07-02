@@ -53,6 +53,24 @@ type Category {
   categoryCode: String!
 }
 
+type ReportElement {
+  category_name: String!
+  total: Int!
+  assigned: Int!
+  available: Int!
+  not_available: Int!
+  waiting_for_recycling: Int!
+  recycled: Int!
+}
+
+type ReportResponse {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  data: [ReportElement!]!
+}
+
 type Assignment {
   id: Int!
   assetCode: String!
@@ -76,8 +94,23 @@ type FindAssignmentsOutput {
 }
 
 type RequestReturn {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  id: Int!
+  assetId: Int!
+  assignmentId: Int!
+  requestedById: Int!
+  acceptedById: Int!
+  assignedDate: String!
+  returnedDate: String!
+  state: String!
+  isRemoved: Boolean!
+}
+
+type FindRequestReturnsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  requestReturns: [RequestReturn!]!
 }
 
 type Query {
@@ -86,10 +119,12 @@ type Query {
   findAssets(request: FindAssetsInput!): FindAssetsOutput!
   findOneAsset(id: Int!): Asset!
   getCategories: [Category!]!
+  getReport(reportInput: ReportInput!): ReportResponse!
   findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
-  requestReturns: [RequestReturn!]!
-  requestReturn(id: Int!): RequestReturn!
+  getListOwnAssignment(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
+  findRequestReturns(request: FindRequestReturnsInput!): FindRequestReturnsOutput!
+  findOneRequestReturn(id: Int!): RequestReturn!
 }
 
 input FindUsersInput {
@@ -111,6 +146,13 @@ input FindAssetsInput {
   categoryFilter: [String!]
 }
 
+input ReportInput {
+  page: Int
+  limit: Int
+  sortOrder: String = "asc"
+  sort: String = "category_name"
+}
+
 input FindAssignmentsInput {
   page: Int = 1
   limit: Int = 20
@@ -121,17 +163,31 @@ input FindAssignmentsInput {
   assignedDate: String
 }
 
+input FindRequestReturnsInput {
+  page: Int = 1
+  limit: Int = 20
+  query: String
+  sortOrder: String = "asc"
+  sortField: String = "id"
+  stateFilter: [String!]
+  returnedDateFilter: String
+}
+
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
   disableUser(id: Int!): Boolean!
   createAsset(createAssetInput: CreateAssetInput!): Asset!
   updateAsset(id: Int!, updateAssetInput: UpdateAssetInput!): Asset!
+  deleteAsset(id: Int!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
-  createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
-  updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
-  removeRequestReturn(id: Int!): RequestReturn!
+  removeAssignment(id: Int!): Boolean!
+  updateAssignment(id: Int!, updateAssignmentInput: UpdateAssignmentInput!): Assignment!
+  updateStatusAssignment(updateStatusAssignmentInput: UpdateStatusAssignmentInput!): Boolean!
+  createRequestReturn(request: CreateRequestReturnInput!): RequestReturn!
+  completeRequestReturn(id: Int!): RequestReturn!
+  deleteRequestReturn(id: Int!): RequestReturn!
 }
 
 input CreateUserInput {
@@ -198,13 +254,26 @@ input CreateAssignmentInput {
   assetId: Int!
 }
 
-input CreateRequestReturnInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+input UpdateAssignmentInput {
+  assetCode: String
+  assetName: String
+  assignedToId: Int
+  assignedToUsername: String
+  assignedDate: String
+  note: String
+  assetId: Int
 }
 
-input UpdateRequestReturnInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+input UpdateStatusAssignmentInput {
   id: Int!
+
+  """assignment status"""
+  state: String!
+}
+
+input CreateRequestReturnInput {
+  assetId: Int!
+  assignmentId: Int!
+  requestedById: Int!
+  assignedDate: String!
 }

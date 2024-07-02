@@ -15,8 +15,7 @@ import {
 } from 'src/shared/enums';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { MyBadRequestException } from 'src/shared/exceptions';
-// import { RoleGuard } from 'src/common/guard/role.guard';
-// import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+
 import { Category } from '../categories/entities/category.entity';
 
 describe('AssetsResolver', () => {
@@ -314,28 +313,28 @@ describe('AssetsResolver', () => {
     });
   });
 
-  // describe('removeAsset', () => {
-  //   it('should remove an asset', async () => {
-  //     const result = await resolver.removeAsset(1, mockCurrentUser);
-  //     expect(result).toEqual(mockAsset);
-  //     expect(assetsService.remove).toHaveBeenCalledWith(
-  //       1,
-  //       mockCurrentUser.location,
-  //     );
-  //   });
+  describe('removeAsset', () => {
+    it('should remove an asset', async () => {
+      const result = await resolver.removeAsset(1, mockCurrentUser);
+      expect(result).toEqual(mockAsset);
+      expect(assetsService.remove).toHaveBeenCalledWith(
+        1,
+        mockCurrentUser.location,
+      );
+    });
 
-  //   it('should throw an exception when remove fails', async () => {
-  //     jest
-  //       .spyOn(assetsService, 'remove')
-  //       .mockRejectedValueOnce(
-  //         new MyBadRequestException('Error removing asset'),
-  //       );
+    it('should throw an exception when remove fails', async () => {
+      jest
+        .spyOn(assetsService, 'remove')
+        .mockRejectedValueOnce(
+          new MyBadRequestException('Error removing asset'),
+        );
 
-  //     await expect(resolver.removeAsset(1, mockCurrentUser)).rejects.toThrow(
-  //       MyBadRequestException,
-  //     );
-  //   });
-  // });
+      await expect(resolver.removeAsset(1, mockCurrentUser)).rejects.toThrow(
+        MyBadRequestException,
+      );
+    });
+  });
 
   describe('category', () => {
     it('should find category by id', async () => {

@@ -3,7 +3,6 @@ import {
   Query,
   Mutation,
   Args,
-  Int,
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
@@ -20,9 +19,10 @@ import { RoleGuard } from 'src/common/guard/role.guard';
 
 import { CategoriesService } from '../categories/categories.service';
 import { FindAssetsInput } from './dto/find-assets.input';
-import { FindAssetsOutput } from './dto/find-assets.output';
-import { Category } from '../categories/entities/category.entity';
 import { UpdateAssetInput } from './dto/update-asset.input';
+import { returningAsset, returningFindAssetsOutput } from './returns';
+import { returningInt } from 'src/shared/constants';
+import { returningCategory } from '../categories/returns';
 
 @Resolver(() => Asset)
 export class AssetsResolver {
@@ -30,9 +30,10 @@ export class AssetsResolver {
     private readonly assetsService: AssetsService,
     private readonly categoryService: CategoriesService,
   ) {}
+
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Asset)
+  @Mutation(returningAsset)
   async createAsset(
     @Args('createAssetInput') createAssetInput: CreateAssetInput,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -42,9 +43,9 @@ export class AssetsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Asset)
+  @Mutation(returningAsset)
   async updateAsset(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @Args('updateAssetInput') updateAssetInput: UpdateAssetInput,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
@@ -57,7 +58,7 @@ export class AssetsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => FindAssetsOutput, { name: 'findAssets' })
+  @Query(returningFindAssetsOutput, { name: 'findAssets' })
   async getAssets(
     @CurrentUser() userReq: CurrentUserInterface,
     @Args('request') request: FindAssetsInput,
@@ -68,25 +69,25 @@ export class AssetsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => Asset, { name: 'findOneAsset' })
+  @Query(returningAsset, { name: 'findOneAsset' })
   async findOne(
     @CurrentUser() userReq: CurrentUserInterface,
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
   ) {
     const location = userReq.location;
     return await this.assetsService.findOne(id, location);
   }
 
-  @ResolveField(() => Category)
+  @ResolveField(returningCategory)
   async category(@Parent() asset: Asset) {
     return await this.categoryService.findById(asset.categoryId);
   }
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Asset, { name: 'deleteAsset' })
+  @Mutation(returningAsset, { name: 'deleteAsset' })
   async removeAsset(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return await this.assetsService.remove(id, userReq.location);

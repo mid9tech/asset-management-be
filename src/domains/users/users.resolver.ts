@@ -1,15 +1,17 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { FindUsersInput, FindUsersOutput } from './dto/find-users.input';
+import { FindUsersInput } from './dto/find-users.input';
 import { UseGuards } from '@nestjs/common';
 import { USER_TYPE } from '@prisma/client';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
 import { CurrentUserInterface } from 'src/shared/generics';
+import { returningFindUsersOutput, returningUser } from './returns';
+import { returningBoolean, returningInt } from 'src/shared/constants';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -17,7 +19,7 @@ export class UsersResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => User)
+  @Mutation(returningUser)
   createUser(
     @Args('createUserInput') createUserInput: CreateUserInput,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -27,7 +29,7 @@ export class UsersResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => FindUsersOutput, { name: 'findUsers' })
+  @Query(returningFindUsersOutput, { name: 'findUsers' })
   async findUsers(
     @CurrentUser() userReq: CurrentUserInterface,
     @Args('request') request: FindUsersInput,
@@ -41,9 +43,9 @@ export class UsersResolver {
   }
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => User, { name: 'user' })
+  @Query(returningUser, { name: 'user' })
   findOne(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     const location = userReq.location;
@@ -56,7 +58,7 @@ export class UsersResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => User)
+  @Mutation(returningUser)
   updateUser(
     @Args('updateUserInput') updateUserInput: UpdateUserInput,
     @Args('id') id: number,
@@ -64,8 +66,8 @@ export class UsersResolver {
     return this.usersService.update(id, updateUserInput);
   }
 
-  @Mutation(() => Boolean)
-  disableUser(@Args('id', { type: () => Int }) id: number) {
+  @Mutation(returningBoolean)
+  disableUser(@Args('id', { type: returningInt }) id: number) {
     return this.usersService.disableUser(id);
   }
 }
