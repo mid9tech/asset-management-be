@@ -88,10 +88,7 @@ type Query {
   getCategories: [Category!]!
   findAssignments(findAssignmentsInput: FindAssignmentsInput!): FindAssignmentsOutput!
   assignment(id: Int!): Assignment!
-  removeAssignment(id: Int!): Boolean!
-  updateAssignment(id: Int!, updateAssignmentInput: UpdateAssignmentInput!): Boolean!
   getListOwnAssignment(findAssignmentsInput: FindAssignmentsInput!): Boolean!
-  updateStatusAssignment(updateStatusAssignmentInput: UpdateStatusAssignmentInput!): Boolean!
   requestReturns: [RequestReturn!]!
   requestReturn(id: Int!): RequestReturn!
 }
@@ -125,23 +122,6 @@ input FindAssignmentsInput {
   assignedDate: String
 }
 
-input UpdateAssignmentInput {
-  assetCode: String
-  assetName: String
-  assignedToId: Int
-  assignedToUsername: String
-  assignedDate: String
-  note: String
-  assetId: Int
-}
-
-input UpdateStatusAssignmentInput {
-  id: Int!
-
-  """assignment status"""
-  state: String!
-}
-
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!, id: Float!): User!
@@ -151,6 +131,9 @@ type Mutation {
   deleteAsset(id: Int!): Asset!
   createCategory(createCategoryInput: CreateCategoryInput!): Category!
   createAssignment(createAssignmentInput: CreateAssignmentInput!): Assignment!
+  removeAssignment(id: Int!): Boolean!
+  updateAssignment(id: Int!, updateAssignmentInput: UpdateAssignmentInput!): Boolean!
+  updateStatusAssignment(updateStatusAssignmentInput: UpdateStatusAssignmentInput!): Boolean!
   createRequestReturn(createRequestReturnInput: CreateRequestReturnInput!): RequestReturn!
   updateRequestReturn(updateRequestReturnInput: UpdateRequestReturnInput!): RequestReturn!
   removeRequestReturn(id: Int!): RequestReturn!
@@ -218,6 +201,23 @@ input CreateAssignmentInput {
   assignedDate: String!
   note: String
   assetId: Int!
+}
+
+input UpdateAssignmentInput {
+  assetCode: String
+  assetName: String
+  assignedToId: Int
+  assignedToUsername: String
+  assignedDate: String
+  note: String
+  assetId: Int
+}
+
+input UpdateStatusAssignmentInput {
+  id: Int!
+
+  """assignment status"""
+  state: String!
 }
 
 input CreateRequestReturnInput {

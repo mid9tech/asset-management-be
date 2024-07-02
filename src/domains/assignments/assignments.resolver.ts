@@ -97,7 +97,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => Boolean)
+  @Mutation(() => Boolean)
   removeAssignment(
     @Args('id', { type: () => Int }) id: number,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -107,7 +107,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => Boolean)
+  @Mutation(() => Boolean)
   updateAssignment(
     @Args('id', { type: () => Int }) id: number,
     @Args('updateAssignmentInput') updateAssignmentInput: UpdateAssignmentInput,
@@ -130,7 +130,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => Boolean)
+  @Mutation(() => Boolean)
   updateStatusAssignment(
     @Args('updateStatusAssignmentInput')
     updateStatusAssignmentInput: UpdateStatusAssignmentInput,
