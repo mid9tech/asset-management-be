@@ -5,8 +5,11 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
+  MyInternalException,
 } from 'src/shared/exceptions';
 import { ENTITY_NAME } from 'src/shared/constants';
+import { ReportInput } from './dto/report.input';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
@@ -76,5 +79,47 @@ export class CategoriesService {
       throw new MyEntityNotFoundException(ENTITY_NAME.CATEGORY);
     }
     return category;
+  }
+
+  async getReport(reportInput: ReportInput) {
+    const {
+      limit = 20,
+      page = 1,
+      sort = 'categoryName',
+      sortOrder = 'asc',
+    } = reportInput;
+
+    const offset = (page - 1) * limit;
+
+    try {
+      const totalItems = await this.prismaService.$queryRaw<
+        { count: number }[]
+      >`SELECT COUNT(*)::INTEGER as count FROM asset_report`;
+
+      /* const reportData = await this.prismaService.$queryRaw<
+        any[]
+      >`SELECT * FROM asset_report
+          ORDER BY ${Prisma.raw(sort)} ${Prisma.raw(sortOrder)}
+          LIMIT ${Prisma.raw(limit.toString())}
+          OFFSET ${Prisma.raw(offset.toString())}`; */
+
+      const reportData = await this.prismaService.$queryRaw<
+        any[]
+      >`SELECT * from asset_report`;
+
+      return {
+        total: totalItems[0].count,
+        totalPages: Math.ceil(totalItems[0].count / limit),
+        page: page,
+        limit: limit,
+        data: reportData,
+      };
+    } catch (error) {
+      console.log(error);
+
+      throw new MyInternalException(
+        'An error occurred while fetching the report data.',
+      );
+    }
   }
 }

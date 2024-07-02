@@ -107,7 +107,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(returningBoolean)
+  @Mutation(returningAssignment)
   updateAssignment(
     @Args('id', { type: returningInt }) id: number,
     @Args('updateAssignmentInput') updateAssignmentInput: UpdateAssignmentInput,
