@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { Int } from '@nestjs/graphql';
 
 dotenv.config();
 
@@ -42,3 +43,6 @@ export const JWT_CONST = {
 const domains = process.env.DOMAINS;
 
 export const allowedOrigins = domains ? domains.split(',') : [];
+
+export const returningInt = () => Int;
+export const returningBoolean = () => Boolean;

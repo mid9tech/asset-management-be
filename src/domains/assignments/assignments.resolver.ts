@@ -3,7 +3,6 @@ import {
   Query,
   Mutation,
   Args,
-  Int,
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
@@ -16,20 +15,21 @@ import { UseGuards } from '@nestjs/common';
 import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
 import { CurrentUserInterface } from 'src/shared/generics';
-import {
-  FindAssignmentsInput,
-  FindAssignmentsOutput,
-} from './dto/find-assignment.input';
-import { User } from '../users/entities/user.entity';
+import { FindAssignmentsInput } from './dto/find-assignment.input';
+
 import { UsersService } from '../users/users.service';
 import { AssetsService } from '../assets/assets.service';
-import { Asset } from '../assets/entities/asset.entity';
+
 import {
   UpdateStatusAssignmentInput,
   UpdateAssignmentInput,
 } from './dto/update-assignment.input';
+import { returningAssignment, returningFindAssignmentsOutput } from './returns';
+import { returningUser } from '../users/returns';
+import { returningBoolean, returningInt } from 'src/shared/constants';
+import { returningAsset } from '../assets/returns';
 
-@Resolver(() => Assignment)
+@Resolver(returningAssignment)
 export class AssignmentsResolver {
   constructor(
     private readonly assignmentsService: AssignmentsService,
@@ -39,7 +39,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Assignment)
+  @Mutation(returningAssignment)
   createAssignment(
     @Args('createAssignmentInput') createAssignmentInput: CreateAssignmentInput,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -49,7 +49,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => FindAssignmentsOutput, { name: 'findAssignments' })
+  @Query(returningFindAssignmentsOutput, { name: 'findAssignments' })
   async findAll(
     @Args('findAssignmentsInput') findAssignmentsInput: FindAssignmentsInput,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -61,7 +61,7 @@ export class AssignmentsResolver {
     return result;
   }
 
-  @ResolveField(() => User, { name: 'assigner' })
+  @ResolveField(returningUser, { name: 'assigner' })
   getAssigner(
     @Parent() assignment: Assignment,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -69,7 +69,7 @@ export class AssignmentsResolver {
     return this.usersService.findOne(assignment.assignedById, userReq.location);
   }
 
-  @ResolveField(() => User, { name: 'assignee' })
+  @ResolveField(returningUser, { name: 'assignee' })
   getAssignee(
     @Parent() assignment: Assignment,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -77,7 +77,7 @@ export class AssignmentsResolver {
     return this.usersService.findOne(assignment.assignedToId, userReq.location);
   }
 
-  @ResolveField(() => Asset, { name: 'asset' })
+  @ResolveField(returningAsset, { name: 'asset' })
   getAsset(
     @Parent() assignment: Assignment,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -87,9 +87,9 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Query(() => Assignment, { name: 'assignment' })
+  @Query(returningAssignment, { name: 'assignment' })
   findOne(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return this.assignmentsService.findOne(id, userReq.location);
@@ -97,9 +97,9 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Boolean)
+  @Mutation(returningBoolean)
   removeAssignment(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return this.assignmentsService.removeAssignment(id, userReq);
@@ -107,9 +107,9 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Boolean)
+  @Mutation(returningBoolean)
   updateAssignment(
-    @Args('id', { type: () => Int }) id: number,
+    @Args('id', { type: returningInt }) id: number,
     @Args('updateAssignmentInput') updateAssignmentInput: UpdateAssignmentInput,
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
@@ -117,7 +117,7 @@ export class AssignmentsResolver {
   }
 
   @UseGuards(JwtAccessAuthGuard)
-  @Query(() => Boolean)
+  @Query(returningBoolean)
   getListOwnAssignment(
     @Args('findAssignmentsInput') findAssignmentsInput: FindAssignmentsInput,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -130,7 +130,7 @@ export class AssignmentsResolver {
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
-  @Mutation(() => Boolean)
+  @Mutation(returningBoolean)
   updateStatusAssignment(
     @Args('updateStatusAssignmentInput')
     updateStatusAssignmentInput: UpdateStatusAssignmentInput,
