@@ -31,10 +31,19 @@ function addYears(date: Date, years: number): Date {
 
 async function createUser() {
   const validDOB = generateValidDOB();
+
+  // Function to remove special characters from a string
+  function removeSpecialCharacters(str) {
+    return str.replace(/[^a-zA-Z ]/g, '');
+  }
+
+  const firstName = removeSpecialCharacters(faker.person.firstName());
+  const lastName = removeSpecialCharacters(faker.person.lastName());
+
   return prisma.user.create({
     data: {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
+      firstName: firstName,
+      lastName: lastName,
       gender: faker.helpers.arrayElement([GENDER.MALE, GENDER.FEMALE]),
       dateOfBirth: validDOB,
       joinedDate: addYears(validDOB, 18),
@@ -146,7 +155,7 @@ async function main() {
   );
 
   // Seed Users
-  for (let i = 0; i < 200; i++) {
+  for (let i = 0; i < 60; i++) {
     await createUser();
   }
 
