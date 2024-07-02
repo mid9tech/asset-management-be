@@ -154,7 +154,10 @@ export class AssignmentsService {
 
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
-      where,
+      where: {
+        ...where,
+        isRemoved: false,
+      },
       skip: (page - 1) * limit,
       take: limit,
       orderBy,
@@ -336,7 +339,10 @@ export class AssignmentsService {
 
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
-      where,
+      where: {
+        ...where,
+        isRemoved: false,
+      },
       skip: (page - 1) * limit,
       take: limit,
       orderBy,
