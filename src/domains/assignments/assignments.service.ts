@@ -287,7 +287,12 @@ export class AssignmentsService {
       // Update assignment
       const updatedAssignment = await prisma.assignment.update({
         where: { id },
-        data: updateAssignmentInput,
+        data: {
+          ...updateAssignmentInput,
+          assignedDate: new Date(
+            updateAssignmentInput.assignedDate,
+          ).toISOString(),
+        },
       });
 
       // Update asset states
