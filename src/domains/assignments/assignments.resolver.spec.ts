@@ -16,6 +16,7 @@ import {
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { AssetsService } from '../assets/assets.service';
 import AssetsServiceMock from '../assets/__mocks__/mock-assets.service';
+import { ASSIGNMENT_STATE } from 'src/shared/enums';
 
 describe('AssignmentsResolver', () => {
   let resolver: AssignmentsResolver;
@@ -132,6 +133,41 @@ describe('AssignmentsResolver', () => {
         currentUserMock,
       );
       expect(result).toEqual(null);
+    });
+  });
+
+  describe('update', () => {
+    it('should return data updated', async () => {
+      const result = await resolver.updateAssignment(
+        1,
+        assignmentDataMock[0],
+        currentUserMock,
+      );
+      expect(result).toEqual(assignmentDataMock[0]);
+    });
+  });
+  describe('removeAssignment', () => {
+    it('should return true', async () => {
+      const result = await resolver.removeAssignment(1, currentUserMock);
+      expect(result).toEqual(true);
+    });
+  });
+  describe('getListOwnAssignment', () => {
+    it('should return list assignment', async () => {
+      const result = await resolver.getListOwnAssignment(
+        findAssignmentInputMock[0],
+        currentUserMock,
+      );
+      expect(result).toEqual(assignmentDataMock);
+    });
+  });
+  describe('updateStatusAssignment', () => {
+    it('should return true', async () => {
+      const result = await resolver.updateStatusAssignment(
+        { id: 1, state: ASSIGNMENT_STATE.ACCEPTED },
+        currentUserMock,
+      );
+      expect(result).toEqual(true);
     });
   });
 });

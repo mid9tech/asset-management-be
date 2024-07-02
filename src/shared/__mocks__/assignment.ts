@@ -1,12 +1,13 @@
 import { CreateAssignmentInput } from 'src/domains/assignments/dto/create-assignment.input';
 import { Assignment } from 'src/domains/assignments/entities/assignment.entity';
 import { userDataMock } from './user';
-import { ASSIGNMENT_STATE } from '../enums';
+import { ASSIGNMENT_STATE, LOCATION } from '../enums';
 import {
   FindAssignmentsOutput,
   FindAssignmentsInput,
 } from 'src/domains/assignments/dto/find-assignment.input';
 import { assetDataMock } from './asset';
+import * as MyPrisma from '@prisma/client';
 
 export const assignmentDataMock: Assignment[] = [
   {
@@ -42,6 +43,16 @@ export const assignmentDataMock: Assignment[] = [
     asset: assetDataMock[0],
   },
 ];
+
+export const assignmentDataPrismaMock: MyPrisma.Assignment = {
+  ...assignmentDataMock[0],
+  id: 1,
+  location: LOCATION.HCM,
+  isRemoved: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  assignedDate: new Date(),
+};
 
 export const assignmentInputMock: CreateAssignmentInput[] = [
   {
@@ -95,6 +106,15 @@ export const assignmentInputMock: CreateAssignmentInput[] = [
     assetName: 'asset',
     assignedDate: '2024-12-22T13:32:33.076Z',
     assignedToId: null,
+    assignedToUsername: 'username',
+    note: 'Note',
+  },
+  {
+    assetCode: 'assetCode',
+    assetId: 1,
+    assetName: 'asset',
+    assignedDate: '2024-12-22T13:32:33.076Z',
+    assignedToId: 1,
     assignedToUsername: 'username',
     note: 'Note',
   },

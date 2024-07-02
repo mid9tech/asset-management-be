@@ -15,7 +15,7 @@ export default class PrismaServiceMock {
   };
   assignment = {
     create: jest.fn().mockReturnValue(assignmentDataMock[0]),
-    update: jest.fn().mockReturnValue(assignmentDataMock),
+    update: jest.fn().mockReturnValue(assignmentDataMock[0]),
     findFirst: jest.fn().mockImplementation(() => assignmentDataMock[0]),
     findMany: jest.fn().mockReturnValue(assignmentDataMock),
     delete: jest.fn().mockReturnValue(assignmentDataMock),
@@ -29,4 +29,8 @@ export default class PrismaServiceMock {
     delete: jest.fn().mockReturnValue(assetDataMock),
     count: jest.fn().mockReturnValue(10),
   };
+
+  $transaction = jest.fn().mockImplementation((callback) => {
+    return callback(this); // Ensure the callback receives the PrismaServiceMock instance
+  });
 }

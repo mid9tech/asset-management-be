@@ -24,6 +24,10 @@ import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { AssetsService } from '../assets/assets.service';
 import { Asset } from '../assets/entities/asset.entity';
+import {
+  UpdateStatusAssignmentInput,
+  UpdateAssignmentInput,
+} from './dto/update-assignment.input';
 
 @Resolver(() => Assignment)
 export class AssignmentsResolver {
@@ -89,5 +93,52 @@ export class AssignmentsResolver {
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return this.assignmentsService.findOne(id, userReq.location);
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Query(() => Boolean)
+  removeAssignment(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.removeAssignment(id, userReq);
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Query(() => Boolean)
+  updateAssignment(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('updateAssignmentInput') updateAssignmentInput: UpdateAssignmentInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.update(id, updateAssignmentInput, userReq);
+  }
+
+  @UseGuards(JwtAccessAuthGuard)
+  @Query(() => Boolean)
+  getListOwnAssignment(
+    @Args('findAssignmentsInput') findAssignmentsInput: FindAssignmentsInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.getListOwnAssignment(
+      findAssignmentsInput,
+      userReq,
+    );
+  }
+
+  @Roles(USER_TYPE.ADMIN)
+  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @Query(() => Boolean)
+  updateStatusAssignment(
+    @Args('updateStatusAssignmentInput')
+    updateStatusAssignmentInput: UpdateStatusAssignmentInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.updateStatusAssignment(
+      updateStatusAssignmentInput,
+      userReq,
+    );
   }
 }
