@@ -201,14 +201,25 @@ export class AssignmentsService {
       );
     }
 
-    await this.prismaService.assignment.update({
-      where: { id: assignmentId },
-      data: {
-        isRemoved: true,
-      },
+    const result = await this.prismaService.$transaction(async (prisma) => {
+      await prisma.assignment.update({
+        where: { id: assignmentId },
+        data: {
+          isRemoved: true,
+        },
+      });
+
+      await prisma.asset.update({
+        where: { id: assignment.assetId },
+        data: {
+          isReadyAssigned: true,
+        },
+      });
+
+      return true;
     });
 
-    return true;
+    return result;
   }
 
   async update(
