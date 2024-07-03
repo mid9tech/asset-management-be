@@ -103,6 +103,10 @@ type RequestReturn {
   returnedDate: String!
   state: String!
   isRemoved: Boolean!
+  asset: Asset!
+  assignment: Assignment!
+  acceptedBy: User!
+  requestedBy: User!
 }
 
 type FindRequestReturnsOutput {
