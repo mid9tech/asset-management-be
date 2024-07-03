@@ -153,6 +153,79 @@ describe('RequestReturnsService', () => {
         MyBadRequestException,
       );
     });
+
+    // Tests for orderBy
+    it.each([
+      ['assetCode', 'asc'],
+      ['assetName', 'asc'],
+      ['requestedBy', 'asc'],
+      ['acceptedBy', 'asc'],
+      ['id', 'asc'],
+    ])(
+      'should return sorted request returns for sortField %s and sortOrder %s',
+      async (sortField: string, sortOrder: 'asc' | 'desc') => {
+        const input: FindRequestReturnsInput = {
+          query: '',
+          stateFilter: [],
+          returnedDateFilter: undefined,
+          page: 1,
+          limit: 10,
+          sortField: sortField,
+          sortOrder: sortOrder,
+        };
+        const location = LOCATION.HCM;
+        const requestReturns = [
+          {
+            id: 1,
+            assetId: 1,
+            assignmentId: 1,
+            state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+            assignedDate: null,
+            returnedDate: null,
+          },
+        ];
+        const total = 1;
+
+        mockPrismaService.requestReturn.findMany.mockResolvedValueOnce(
+          requestReturns,
+        );
+        mockPrismaService.requestReturn.count.mockResolvedValueOnce(total);
+
+        const result = await service.findRequestReturns(input, location);
+
+        expect(result).toEqual({
+          requestReturns: requestReturns.map((r) => ({
+            ...r,
+            assignedDate: r.assignedDate?.toISOString() || null,
+            returnedDate: r.returnedDate?.toISOString() || null,
+          })),
+          page: input.page,
+          limit: input.limit,
+          total,
+          totalPages: Math.ceil(total / input.limit),
+        });
+
+        const expectedOrderBy = {};
+        if (sortField === 'assetCode') {
+          expectedOrderBy['asset'] = { assetCode: sortOrder };
+        } else if (sortField === 'assetName') {
+          expectedOrderBy['asset'] = { assetName: sortOrder };
+        } else if (sortField === 'requestedBy') {
+          expectedOrderBy['requestedBy'] = { username: sortOrder };
+        } else if (sortField === 'acceptedBy') {
+          expectedOrderBy['acceptedBy'] = { username: sortOrder };
+        } else {
+          expectedOrderBy[sortField] = sortOrder;
+        }
+
+        expect(mockPrismaService.requestReturn.findMany).toHaveBeenCalledWith({
+          where: expect.any(Object),
+          skip: (input.page - 1) * input.limit,
+          take: input.limit,
+          orderBy: expectedOrderBy,
+        });
+      },
+    );
   });
 
   describe('findOne', () => {
