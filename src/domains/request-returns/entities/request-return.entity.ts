@@ -16,13 +16,13 @@ export class RequestReturn {
   @Field(() => Int)
   requestedById: number;
 
-  @Field(() => Int)
+  @Field(() => Int, { nullable: true })
   acceptedById: number;
 
   @Field(() => String)
   assignedDate: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   returnedDate: string;
 
   @Field(() => String)

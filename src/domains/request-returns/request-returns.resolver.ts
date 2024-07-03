@@ -115,13 +115,21 @@ export class RequestReturnsResolver {
     );
   }
 
-  @ResolveField(() => User)
+  @ResolveField(() => User, { nullable: true })
   async acceptedBy(@Parent() requestReturn: RequestReturn) {
-    return await this.userService.findOne(requestReturn.acceptedById);
+    if (requestReturn.acceptedById)
+      return await this.userService.findOne(requestReturn.acceptedById);
+    else return null;
   }
 
   @ResolveField(() => User)
-  async requestedBy(@Parent() requestReturn: RequestReturn) {
-    return await this.userService.findOne(requestReturn.requestedById);
+  async requestedBy(
+    @Parent() requestReturn: RequestReturn,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.userService.findOne(
+      requestReturn.requestedById,
+      userReq.location,
+    );
   }
 }

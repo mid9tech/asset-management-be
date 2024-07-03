@@ -4,7 +4,7 @@ import { CreateRequestReturnInput } from './dto/create-request-return.input';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { FindRequestReturnsInput } from './dto/find-request-returns.input';
 import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
-import { FindRequestReturnsOutput } from './dto/find-request-returns.output';
+// import { FindRequestReturnsOutput } from './dto/find-request-returns.output';
 import { MyBadRequestException } from 'src/shared/exceptions';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class RequestReturnsService {
           { asset: { assetCode: { contains: input.query } } },
           { requestedBy: { username: { contains: input.query } } },
         ],
-        state: stateFilter.length > 0 ? { in: stateFilter } : undefined,
+        state: { in: stateFilter },
         returnedDate: input.returnedDateFilter ? returnedDateFilter : undefined,
         assignment: { location },
         isRemoved: false,
@@ -78,6 +78,14 @@ export class RequestReturnsService {
       where: { id: assignmentId },
     });
 
+    const checkExist = await this.prismaService.requestReturn.findFirst({
+      where: { assignmentId, isRemoved: false },
+    });
+
+    if (checkExist) {
+      throw new MyBadRequestException('Request return already exist');
+    }
+
     if (!assignment) {
       throw new MyBadRequestException('Assignment not found');
     }
@@ -96,11 +104,11 @@ export class RequestReturnsService {
         assetId,
         assignmentId,
         requestedById,
-        assignedDate,
+        assignedDate: new Date(assignedDate),
         state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
       },
     });
-
+    console.log(requestReturn);
     return requestReturn;
   }
 
