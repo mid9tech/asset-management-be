@@ -3,7 +3,12 @@ import { CreateRequestReturnInput } from './dto/create-request-return.input';
 
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { FindRequestReturnsInput } from './dto/find-request-returns.input';
-import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
+import {
+  ASSET_STATE,
+  LOCATION,
+  Prisma,
+  REQUEST_RETURN_STATE,
+} from '@prisma/client';
 // import { FindRequestReturnsOutput } from './dto/find-request-returns.output';
 import { MyBadRequestException } from 'src/shared/exceptions';
 
@@ -13,7 +18,13 @@ export class RequestReturnsService {
 
   async findRequestReturns(input: FindRequestReturnsInput, location: LOCATION) {
     try {
-      const { stateFilter = [], returnedDateFilter } = input;
+      const {
+        stateFilter = [],
+        returnedDateFilter,
+        sortField,
+        sortOrder,
+      } = input;
+
       const whereCondition = {
         OR: [
           { asset: { assetName: { contains: input.query } } },
@@ -26,13 +37,30 @@ export class RequestReturnsService {
         isRemoved: false,
       };
 
+      const orderBy: Prisma.RequestReturnOrderByWithRelationInput = {};
+
+      switch (sortField) {
+        case 'assetCode':
+          orderBy.asset = { assetCode: sortOrder };
+          break;
+        case 'assetName':
+          orderBy.asset = { assetName: sortOrder };
+          break;
+        case 'requestedBy':
+          orderBy.requestedBy = { username: sortOrder };
+          break;
+        case 'acceptedBy':
+          orderBy.acceptedBy = { username: sortOrder };
+          break;
+        default:
+          orderBy[sortField] = sortOrder;
+      }
+
       const requestReturns = await this.prismaService.requestReturn.findMany({
         where: whereCondition,
         skip: (input.page - 1) * input.limit,
         take: input.limit,
-        orderBy: input.sortField
-          ? { [input.sortField]: input.sortOrder }
-          : undefined,
+        orderBy: orderBy,
       });
 
       const total = await this.prismaService.requestReturn.count({
@@ -55,6 +83,7 @@ export class RequestReturnsService {
       throw new MyBadRequestException('Error finding request returns');
     }
   }
+
   async findOne(id: number, location: LOCATION) {
     const requestReturn = await this.prismaService.requestReturn.findUnique({
       where: { id, assignment: { location: location } },
