@@ -1,4 +1,11 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { RequestReturnsService } from './request-returns.service';
 import { RequestReturn } from './entities/request-return.entity';
 import { Roles } from 'src/common/decorator/roles.decorator';
@@ -14,10 +21,21 @@ import {
 } from './returns';
 import { returningInt } from 'src/shared/constants';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
+import { Asset } from '../assets/entities/asset.entity';
+import { AssignmentsService } from '../assignments/assignments.service';
+import { AssetsService } from '../assets/assets.service';
+import { UsersService } from '../users/users.service';
+import { Assignment } from '../assignments/entities/assignment.entity';
+import { User } from '../users/entities/user.entity';
 
 @Resolver(() => RequestReturn)
 export class RequestReturnsResolver {
-  constructor(private readonly requestReturnsService: RequestReturnsService) {}
+  constructor(
+    private readonly requestReturnsService: RequestReturnsService,
+    private readonly assetsService: AssetsService,
+    private readonly assignmentService: AssignmentsService,
+    private readonly userService: UsersService,
+  ) {}
 
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
@@ -73,5 +91,45 @@ export class RequestReturnsResolver {
     @Args('id', { type: returningInt }) id: number,
   ) {
     return this.requestReturnsService.deleteRequestReturn(id, userReq.location);
+  }
+
+  @ResolveField(() => Asset)
+  async asset(
+    @Parent() requestReturn: RequestReturn,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.assetsService.findOne(
+      requestReturn.assetId,
+      userReq.location,
+    );
+  }
+
+  @ResolveField(() => Assignment)
+  async assignment(
+    @Parent() requestReturn: RequestReturn,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.assignmentService.findOne(
+      requestReturn.assignmentId,
+      userReq.location,
+    );
+  }
+
+  @ResolveField(() => User, { nullable: true })
+  async acceptedBy(@Parent() requestReturn: RequestReturn) {
+    if (requestReturn.acceptedById)
+      return await this.userService.findOne(requestReturn.acceptedById);
+    else return null;
+  }
+
+  @ResolveField(() => User)
+  async requestedBy(
+    @Parent() requestReturn: RequestReturn,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return await this.userService.findOne(
+      requestReturn.requestedById,
+      userReq.location,
+    );
   }
 }

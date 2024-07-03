@@ -132,12 +132,12 @@ export class UsersService {
         not: user.id,
       };
     }
-
+    where.isDisabled = false;
     const orderBy = { [sort]: sortOrder };
 
     const total = await this.prismaService.user.count({ where });
     const users = await this.prismaService.user.findMany({
-      where: { ...where, isDisabled: false },
+      where,
       skip: (page - 1) * limit,
       take: limit,
       orderBy,
@@ -160,6 +160,7 @@ export class UsersService {
       where.location = location as $Enums.LOCATION;
     }
     where.id = id;
+    console.log('where', where);
     const user = await this.prismaService.user.findFirst({
       where,
     });

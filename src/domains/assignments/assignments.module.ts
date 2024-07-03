@@ -7,5 +7,6 @@ import { AssetsModule } from '../assets/assets.module';
 @Module({
   providers: [AssignmentsResolver, AssignmentsService],
   imports: [UsersModule, AssetsModule],
+  exports: [AssignmentsService],
 })
 export class AssignmentsModule {}

@@ -98,11 +98,15 @@ type RequestReturn {
   assetId: Int!
   assignmentId: Int!
   requestedById: Int!
-  acceptedById: Int!
+  acceptedById: Int
   assignedDate: String!
-  returnedDate: String!
+  returnedDate: String
   state: String!
   isRemoved: Boolean!
+  asset: Asset!
+  assignment: Assignment!
+  acceptedBy: User
+  requestedBy: User!
 }
 
 type FindRequestReturnsOutput {

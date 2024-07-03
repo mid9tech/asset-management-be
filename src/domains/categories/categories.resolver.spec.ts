@@ -1,28 +1,32 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesResolver } from './categories.resolver';
 import { CategoriesService } from './categories.service';
-
 import { CreateCategoryInput } from './dto/create-category.input';
+import { ReportInput } from './dto/report.input';
 
 describe('CategoriesResolver', () => {
   let resolver: CategoriesResolver;
-  let service: CategoriesService;
+  // let service: CategoriesService;
 
   const mockCategoriesService = {
     create: jest.fn(),
     getAll: jest.fn(),
+    getReport: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CategoriesResolver,
-        { provide: CategoriesService, useValue: mockCategoriesService },
+        {
+          provide: CategoriesService,
+          useValue: mockCategoriesService,
+        },
       ],
     }).compile();
 
     resolver = module.get<CategoriesResolver>(CategoriesResolver);
-    service = module.get<CategoriesService>(CategoriesService);
+    // service = module.get<CategoriesService>(CategoriesService);
   });
 
   it('should be defined', () => {
@@ -30,23 +34,24 @@ describe('CategoriesResolver', () => {
   });
 
   describe('createCategory', () => {
-    it('should call service.create with the correct arguments', async () => {
+    it('should create a category', async () => {
       const createCategoryInput: CreateCategoryInput = {
         categoryName: 'New Category',
         categoryCode: 'NWC',
       };
       const category = { id: 1, ...createCategoryInput };
-
       mockCategoriesService.create.mockResolvedValueOnce(category);
 
       const result = await resolver.createCategory(createCategoryInput);
       expect(result).toEqual(category);
-      expect(service.create).toHaveBeenCalledWith(createCategoryInput);
+      expect(mockCategoriesService.create).toHaveBeenCalledWith(
+        createCategoryInput,
+      );
     });
   });
 
   describe('getAll', () => {
-    it('should call service.getAll and return the result', async () => {
+    it('should return all categories', async () => {
       const categories = [
         { id: 1, categoryName: 'Category1', categoryCode: 'CAT1' },
       ];
@@ -54,7 +59,30 @@ describe('CategoriesResolver', () => {
 
       const result = await resolver.getAll();
       expect(result).toEqual(categories);
-      expect(service.getAll).toHaveBeenCalled();
+      expect(mockCategoriesService.getAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('getReport', () => {
+    it('should return report data', async () => {
+      const reportInput: ReportInput = {
+        limit: 10,
+        page: 1,
+        sort: 'categoryCode',
+        sortOrder: 'asc',
+      };
+      const reportData = {
+        total: 5,
+        totalPages: 1,
+        page: 1,
+        limit: 10,
+        data: [{ id: 1, categoryCode: 'CAT1', categoryName: 'Category1' }],
+      };
+      mockCategoriesService.getReport.mockResolvedValueOnce(reportData);
+
+      const result = await resolver.getReport(reportInput);
+      expect(result).toEqual(reportData);
+      expect(mockCategoriesService.getReport).toHaveBeenCalledWith(reportInput);
     });
   });
 });

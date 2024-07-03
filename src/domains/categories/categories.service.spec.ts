@@ -4,12 +4,13 @@ import { PrismaService } from 'src/services/prisma/prisma.service';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
+  MyInternalException,
 } from 'src/shared/exceptions';
 import { CreateCategoryInput } from './dto/create-category.input';
+import { ReportInput } from './dto/report.input';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
-  // let prismaService: PrismaService;
 
   const mockPrismaService = {
     category: {
@@ -18,6 +19,7 @@ describe('CategoriesService', () => {
       findFirst: jest.fn(),
       findUnique: jest.fn(),
     },
+    $queryRaw: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -29,7 +31,6 @@ describe('CategoriesService', () => {
     }).compile();
 
     service = module.get<CategoriesService>(CategoriesService);
-    // prismaService = module.get<PrismaService>(PrismaService);
   });
 
   it('should be defined', () => {
@@ -166,6 +167,50 @@ describe('CategoriesService', () => {
 
       await expect(service.findById(1)).rejects.toThrow(
         MyEntityNotFoundException,
+      );
+    });
+  });
+
+  describe('getReport', () => {
+    it('should return report data', async () => {
+      const reportInput: ReportInput = {
+        limit: 10,
+        page: 1,
+        sort: 'categoryCode',
+        sortOrder: 'asc',
+      };
+
+      const totalItems = [{ count: 5 }];
+      const reportData = [
+        { id: 1, categoryCode: 'CAT1', categoryName: 'Category1' },
+      ];
+
+      mockPrismaService.$queryRaw
+        .mockResolvedValueOnce(totalItems)
+        .mockResolvedValueOnce(reportData);
+
+      const result = await service.getReport(reportInput);
+      expect(result).toEqual({
+        total: 5,
+        totalPages: 1,
+        page: 1,
+        limit: 10,
+        data: reportData,
+      });
+    });
+
+    it('should throw an exception if an error occurs while fetching report data', async () => {
+      const reportInput: ReportInput = {
+        limit: 10,
+        page: 1,
+        sort: 'categoryCode',
+        sortOrder: 'asc',
+      };
+
+      mockPrismaService.$queryRaw.mockRejectedValueOnce(new Error());
+
+      await expect(service.getReport(reportInput)).rejects.toThrow(
+        MyInternalException,
       );
     });
   });
