@@ -11,22 +11,17 @@ import { MyBadRequestException } from 'src/shared/exceptions';
 export class RequestReturnsService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async findRequestReturns(
-    input: FindRequestReturnsInput,
-    location: LOCATION,
-  ): Promise<FindRequestReturnsOutput> {
+  async findRequestReturns(input: FindRequestReturnsInput, location: LOCATION) {
     try {
+      const { stateFilter = [], returnedDateFilter } = input;
       const whereCondition = {
         OR: [
           { asset: { assetName: { contains: input.query } } },
           { asset: { assetCode: { contains: input.query } } },
           { requestedBy: { username: { contains: input.query } } },
         ],
-        state:
-          input.stateFilter.length > 0 ? { in: input.stateFilter } : undefined,
-        returnedDate: input.returnedDateFilter
-          ? input.returnedDateFilter
-          : undefined,
+        state: stateFilter.length > 0 ? { in: stateFilter } : undefined,
+        returnedDate: input.returnedDateFilter ? returnedDateFilter : undefined,
         assignment: { location },
         isRemoved: false,
       };
@@ -56,6 +51,7 @@ export class RequestReturnsService {
         totalPages: Math.ceil(total / input.limit),
       };
     } catch (error) {
+      console.log('error', error);
       throw new MyBadRequestException('Error finding request returns');
     }
   }
