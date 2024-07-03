@@ -21,12 +21,9 @@ import {
 } from './returns';
 import { returningInt } from 'src/shared/constants';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
-import { Asset } from '../assets/entities/asset.entity';
 import { AssignmentsService } from '../assignments/assignments.service';
 import { AssetsService } from '../assets/assets.service';
 import { UsersService } from '../users/users.service';
-import { Assignment } from '../assignments/entities/assignment.entity';
-import { User } from '../users/entities/user.entity';
 import { returningAsset } from '../assets/returns';
 import { returningAssignment } from '../assignments/returns';
 import { returningUser } from '../users/returns';
