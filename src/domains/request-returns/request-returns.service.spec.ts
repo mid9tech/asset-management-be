@@ -1,234 +1,444 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from 'src/services/prisma/prisma.service';
 import { RequestReturnsService } from './request-returns.service';
-// import { CreateRequestReturnInput } from './dto/create-request-return.input';
-// import { MyBadRequestException } from 'src/shared/exceptions';
-// import { LOCATION, REQUEST_RETURN_STATE } from 'src/shared/enums';
+import { PrismaService } from 'src/services/prisma/prisma.service';
+import { MyBadRequestException } from 'src/shared/exceptions';
+import { CreateRequestReturnInput } from './dto/create-request-return.input';
+import { FindRequestReturnsInput } from './dto/find-request-returns.input';
+import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
 
 describe('RequestReturnsService', () => {
   let service: RequestReturnsService;
-  // let prismaService: PrismaService;
+
+  const mockPrismaService = {
+    requestReturn: {
+      findMany: jest.fn(),
+      count: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    assignment: {
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      findFirst: jest.fn(),
+    },
+    asset: {
+      update: jest.fn(),
+    },
+    user: {
+      update: jest.fn(),
+    },
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RequestReturnsService,
-        {
-          provide: PrismaService,
-          useValue: {
-            requestReturn: {
-              findMany: jest.fn(),
-              findUnique: jest.fn(),
-              count: jest.fn(),
-              create: jest.fn(),
-              update: jest.fn(),
-            },
-            assignment: {
-              findUnique: jest.fn(),
-              update: jest.fn(),
-              findFirst: jest.fn(),
-            },
-            asset: {
-              update: jest.fn(),
-            },
-            user: {
-              update: jest.fn(),
-            },
-          },
-        },
+        { provide: PrismaService, useValue: mockPrismaService },
       ],
     }).compile();
 
     service = module.get<RequestReturnsService>(RequestReturnsService);
-    // prismaService = module.get<PrismaService>(PrismaService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // describe('findRequestReturns', () => {
-  //   it('should find request returns based on input filters', async () => {
-  //     const mockInput: FindRequestReturnsInput = {
-  //       page: 1,
-  //       limit: 10,
-  //       query: 'test',
-  //       sortField: 'assetCode',
-  //       sortOrder: 'asc',
-  //       stateFilter: [REQUEST_RETURN_STATE.COMPLETED],
-  //       returnedDateFilter: '2023-01-01',
-  //     };
+  describe('findRequestReturns', () => {
+    it('should return paginated request returns', async () => {
+      const input: FindRequestReturnsInput = {
+        query: '',
+        stateFilter: [],
+        returnedDateFilter: undefined,
+        page: 1,
+        limit: 10,
+        sortField: 'id',
+        sortOrder: 'asc',
+      };
+      const location = LOCATION.HCM;
+      const requestReturns = [
+        {
+          id: 1,
+          assetId: 1,
+          assignmentId: 1,
+          state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+          assignedDate: null,
+          returnedDate: null,
+        },
+      ];
+      const total = 1;
 
-  //     const mockLocation: LOCATION = LOCATION.HCM;
+      mockPrismaService.requestReturn.findMany.mockResolvedValueOnce(
+        requestReturns,
+      );
+      mockPrismaService.requestReturn.count.mockResolvedValueOnce(total);
 
-  //     const mockRequestReturns = [
-  //       {
-  //         id: 1,
-  //         assetId: 1,
-  //         assignmentId: 1,
-  //         requestedById: 1,
-  //         assignedDate: new Date(),
-  //         returnedDate: null,
-  //         state: REQUEST_RETURN_STATE.COMPLETED,
-  //         isRemoved: false,
-  //       },
-  //     ];
+      const result = await service.findRequestReturns(input, location);
 
-  //     const mockTotal = 1;
-  //     const mockTotalPages = 1;
+      expect(result).toEqual({
+        requestReturns: requestReturns.map((r) => ({
+          ...r,
+          assignedDate: r.assignedDate?.toISOString() || null,
+          returnedDate: r.returnedDate?.toISOString() || null,
+        })),
+        page: input.page,
+        limit: input.limit,
+        total,
+        totalPages: Math.ceil(total / input.limit),
+      });
+    });
 
-  //     const expectedResult: FindRequestReturnsOutput = {
-  //       requestReturns: [
-  //         {
-  //           id: 1,
-  //           assetId: 1,
-  //           assignmentId: 1,
-  //           requestedById: 1,
-  //           acceptedById: null,
-  //           assignedDate: expect.any(String),
-  //           returnedDate: null,
-  //           state: REQUEST_RETURN_STATE.COMPLETED,
-  //           isRemoved: false,
-  //         },
-  //       ],
-  //       page: 1,
-  //       limit: 10,
-  //       total: mockTotal,
-  //       totalPages: mockTotalPages,
-  //     };
+    it('should handle empty state filter and undefined returned date filter', async () => {
+      const input: FindRequestReturnsInput = {
+        query: '',
+        stateFilter: [],
+        returnedDateFilter: undefined,
+        page: 1,
+        limit: 10,
+        sortField: 'id',
+        sortOrder: 'asc',
+      };
+      const location = LOCATION.HCM;
+      const requestReturns = [
+        {
+          id: 1,
+          assetId: 1,
+          assignmentId: 1,
+          state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+          assignedDate: null,
+          returnedDate: null,
+        },
+      ];
+      const total = 1;
 
-  //     (prismaService.requestReturn.findMany as jest.Mock).mockResolvedValueOnce(
-  //       mockRequestReturns,
-  //     );
-  //     (prismaService.requestReturn.count as jest.Mock).mockResolvedValueOnce(
-  //       mockTotal,
-  //     );
+      mockPrismaService.requestReturn.findMany.mockResolvedValueOnce(
+        requestReturns,
+      );
+      mockPrismaService.requestReturn.count.mockResolvedValueOnce(total);
 
-  //     const result = await service.findRequestReturns(mockInput, mockLocation);
+      const result = await service.findRequestReturns(input, location);
 
-  //     expect(result).toEqual(expectedResult);
-  //     expect(prismaService.requestReturn.findMany).toHaveBeenCalledWith({
-  //       where: {
-  //         OR: [
-  //           { asset: { assetName: { contains: 'test' } } },
-  //           { asset: { assetCode: { contains: 'test' } } },
-  //           { requestedBy: { username: { contains: 'test' } } },
-  //         ],
-  //         state: { in: [REQUEST_RETURN_STATE.COMPLETED] },
-  //         returnedDate: '2023-01-01',
-  //         assignment: { location: LOCATION.HCM },
-  //         isRemoved: false,
-  //       },
-  //       skip: 0,
-  //       take: 10,
-  //       orderBy: { 'asset.assetCode': 'asc' },
-  //     });
-  //     expect(prismaService.requestReturn.count).toHaveBeenCalledWith({
-  //       where: {
-  //         OR: [
-  //           { asset: { assetName: { contains: 'test' } } },
-  //           { asset: { assetCode: { contains: 'test' } } },
-  //           { requestedBy: { username: { contains: 'test' } } },
-  //         ],
-  //         state: { in: [REQUEST_RETURN_STATE.COMPLETED] },
-  //         returnedDate: '2023-01-01',
-  //         assignment: { location: LOCATION.HCM },
-  //         isRemoved: false,
-  //       },
-  //     });
-  //   });
+      expect(result).toEqual({
+        requestReturns: requestReturns.map((r) => ({
+          ...r,
+          assignedDate: r.assignedDate?.toISOString() || null,
+          returnedDate: r.returnedDate?.toISOString() || null,
+        })),
+        page: input.page,
+        limit: input.limit,
+        total,
+        totalPages: Math.ceil(total / input.limit),
+      });
+    });
 
-  //   it('should handle errors when finding request returns', async () => {
-  //     const mockInput: FindRequestReturnsInput = {
-  //       sortField: '',
-  //       stateFilter: [],
-  //       returnedDateFilter: '',
-  //       page: 0,
-  //       limit: 0,
-  //       query: '',
-  //       sortOrder: 'asc',
-  //     };
+    it('should throw an error if finding request returns fails', async () => {
+      const input: FindRequestReturnsInput = {
+        query: '',
+        stateFilter: [],
+        returnedDateFilter: undefined,
+        page: 1,
+        limit: 10,
+        sortField: 'id',
+        sortOrder: 'asc',
+      };
+      const location = LOCATION.HCM;
 
-  //     const mockLocation: LOCATION = LOCATION.HCM;
+      mockPrismaService.requestReturn.findMany.mockRejectedValueOnce(
+        new Error(),
+      );
 
-  //     (prismaService.requestReturn.count as jest.Mock).mockRejectedValueOnce(
-  //       new Error('Prisma error'),
-  //     );
-
-  //     await expect(
-  //       service.findRequestReturns(mockInput, mockLocation),
-  //     ).rejects.toThrowError(MyBadRequestException);
-  //   });
-  // });
-
-  describe('createRequestReturn', () => {
-    // it('should create a request return', async () => {
-    //   const mockInput: CreateRequestReturnInput = {
-    //     assetId: 1,
-    //     assignmentId: 1,
-    //     requestedById: 1,
-    //     assignedDate: new Date().toISOString(),
-    //   };
-    //   const mockLocation: LOCATION = LOCATION.HCM;
-    //   const mockAssignment = {
-    //     id: 1,
-    //     location: LOCATION.HCM,
-    //     state: 'ACCEPTED', // Assuming this matches ASSIGNMENT_STATE.ACCEPTED
-    //     assetId: 1,
-    //     assignedDate: new Date(),
-    //   };
-    //   (prismaService.assignment.findUnique as jest.Mock).mockResolvedValueOnce(
-    //     mockAssignment,
-    //   );
-    //   const mockRequestReturn = {
-    //     id: 1,
-    //     assetId: 1,
-    //     assignmentId: 1,
-    //     requestedById: 1,
-    //     assignedDate: new Date().toISOString(),
-    //     state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
-    //   };
-    //   (prismaService.requestReturn.create as jest.Mock).mockResolvedValueOnce(
-    //     mockRequestReturn,
-    //   );
-    //   const result = await service.createRequestReturn(mockInput, mockLocation);
-    //   expect(result).toEqual({
-    //     ...mockRequestReturn,
-    //     assignedDate: expect.any(String),
-    //   });
-    //   expect(prismaService.assignment.findUnique).toHaveBeenCalledWith({
-    //     where: { id: 1 },
-    //   });
-    //   expect(prismaService.requestReturn.create).toHaveBeenCalledWith({
-    //     data: {
-    //       assetId: 1,
-    //       assignmentId: 1,
-    //       requestedById: 1,
-    //       state: 'WAITING_FOR_RETURNING',
-    //       assignedDate: expect.any(String),
-    //     },
-    //   });
-    // });
-    // it('should handle errors when creating request return', async () => {
-    //   const mockInput: CreateRequestReturnInput = {
-    //     assetId: 1,
-    //     assignmentId: 1,
-    //     requestedById: 1,
-    //     assignedDate: new Date().toISOString(),
-    //   };
-    //   const mockLocation: LOCATION = LOCATION.HCM;
-    //   (prismaService.assignment.findUnique as jest.Mock).mockResolvedValueOnce(
-    //     null,
-    //   );
-    //   await expect(
-    //     service.createRequestReturn(mockInput, mockLocation),
-    //   ).rejects.toThrowError(MyBadRequestException);
-    // });
+      await expect(service.findRequestReturns(input, location)).rejects.toThrow(
+        MyBadRequestException,
+      );
+    });
   });
 
-  // Add more test cases for other methods like deleteRequestReturn and completeRequestReturn as needed
+  describe('findOne', () => {
+    it('should return a request return if found', async () => {
+      const requestReturn = { id: 1, assignment: { location: LOCATION.HCM } };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      const result = await service.findOne(1, LOCATION.HCM);
+      expect(result).toEqual(requestReturn);
+    });
+
+    it('should throw an error if request return is not found', async () => {
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(null);
+
+      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
+        MyBadRequestException,
+      );
+    });
+  });
+
+  describe('createRequestReturn', () => {
+    it('should create a new request return if inputs are valid', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+      const assignment = {
+        id: 1,
+        location: LOCATION.HCM,
+        state: 'ACCEPTED',
+        assetId: 1,
+      };
+      const requestReturn = { id: 1, ...createRequestReturnInput };
+
+      mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
+      mockPrismaService.requestReturn.findFirst.mockResolvedValueOnce(null);
+      mockPrismaService.requestReturn.create.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      const result = await service.createRequestReturn(
+        createRequestReturnInput,
+        location,
+      );
+      expect(result).toEqual(requestReturn);
+    });
+
+    it('should throw an error if request return already exists', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+      const checkExist = { id: 1, assignmentId: 1 };
+
+      mockPrismaService.requestReturn.findFirst.mockResolvedValueOnce(
+        checkExist,
+      );
+
+      await expect(
+        service.createRequestReturn(createRequestReturnInput, location),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if assignment is not found', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+
+      mockPrismaService.assignment.findUnique.mockResolvedValueOnce(null);
+
+      await expect(
+        service.createRequestReturn(createRequestReturnInput, location),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if assignment location does not match', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+      const assignment = {
+        id: 1,
+        location: LOCATION.HN,
+        state: 'ACCEPTED',
+        assetId: 1,
+      };
+
+      mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
+
+      await expect(
+        service.createRequestReturn(createRequestReturnInput, location),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if assignment state is not accepted', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+      const assignment = {
+        id: 1,
+        location: LOCATION.HCM,
+        state: 'NOT_ACCEPTED',
+        assetId: 1,
+      };
+
+      mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
+
+      await expect(
+        service.createRequestReturn(createRequestReturnInput, location),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if asset id does not match assignment asset id', async () => {
+      const createRequestReturnInput: CreateRequestReturnInput = {
+        assetId: 1,
+        assignmentId: 1,
+        requestedById: 1,
+        assignedDate: new Date().toISOString(),
+      };
+      const location = 'HCM';
+      const assignment = {
+        id: 1,
+        location: LOCATION.HCM,
+        state: 'ACCEPTED',
+        assetId: 2,
+      };
+
+      mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
+
+      await expect(
+        service.createRequestReturn(createRequestReturnInput, location),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+  });
+
+  describe('deleteRequestReturn', () => {
+    it('should delete a request return if conditions are met', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        isRemoved: false,
+      };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+      mockPrismaService.requestReturn.update.mockResolvedValueOnce({
+        ...requestReturn,
+        isRemoved: true,
+      });
+
+      const result = await service.deleteRequestReturn(1, LOCATION.HCM);
+      expect(result).toEqual({ ...requestReturn, isRemoved: true });
+    });
+
+    it('should throw an error if request return is not found', async () => {
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(null);
+
+      await expect(
+        service.deleteRequestReturn(1, LOCATION.HCM),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if request return is not in waiting state', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.COMPLETED,
+        isRemoved: false,
+      };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      await expect(
+        service.deleteRequestReturn(1, LOCATION.HCM),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if request return is already removed', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        isRemoved: true,
+      };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      await expect(
+        service.deleteRequestReturn(1, LOCATION.HCM),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+  });
+
+  describe('completeRequestReturn', () => {
+    it('should complete a request return if conditions are met', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        isRemoved: false,
+        assetId: 1,
+        assignmentId: 1,
+      };
+      const assignment = { id: 1, assignedToId: 1, isRemoved: false };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+      mockPrismaService.requestReturn.update.mockResolvedValueOnce({
+        ...requestReturn,
+        state: REQUEST_RETURN_STATE.COMPLETED,
+      });
+      mockPrismaService.asset.update.mockResolvedValueOnce({
+        id: 1,
+        state: ASSET_STATE.AVAILABLE,
+      });
+      mockPrismaService.assignment.update.mockResolvedValueOnce({
+        ...assignment,
+        isRemoved: true,
+      });
+      mockPrismaService.assignment.findFirst.mockResolvedValueOnce(null);
+      mockPrismaService.user.update.mockResolvedValueOnce({
+        id: 1,
+        isAssigned: false,
+      });
+
+      const result = await service.completeRequestReturn(1, LOCATION.HCM, 1);
+      expect(result).toEqual({
+        ...requestReturn,
+        state: REQUEST_RETURN_STATE.COMPLETED,
+      });
+    });
+
+    it('should throw an error if request return is not found', async () => {
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(null);
+
+      await expect(
+        service.completeRequestReturn(1, LOCATION.HCM, 1),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if request return is not in waiting state', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.COMPLETED,
+        isRemoved: false,
+      };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      await expect(
+        service.completeRequestReturn(1, LOCATION.HCM, 1),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+
+    it('should throw an error if request return is already removed', async () => {
+      const requestReturn = {
+        id: 1,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        isRemoved: true,
+      };
+      mockPrismaService.requestReturn.findUnique.mockResolvedValueOnce(
+        requestReturn,
+      );
+
+      await expect(
+        service.completeRequestReturn(1, LOCATION.HCM, 1),
+      ).rejects.toThrow(MyBadRequestException);
+    });
+  });
 });

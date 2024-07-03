@@ -160,7 +160,6 @@ export class UsersService {
       where.location = location as $Enums.LOCATION;
     }
     where.id = id;
-    console.log('where', where);
     const user = await this.prismaService.user.findFirst({
       where,
     });
