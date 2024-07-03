@@ -21,12 +21,12 @@ import {
 } from './returns';
 import { returningInt } from 'src/shared/constants';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
-import { Asset } from '../assets/entities/asset.entity';
 import { AssignmentsService } from '../assignments/assignments.service';
 import { AssetsService } from '../assets/assets.service';
 import { UsersService } from '../users/users.service';
-import { Assignment } from '../assignments/entities/assignment.entity';
-import { User } from '../users/entities/user.entity';
+import { returningAsset } from '../assets/returns';
+import { returningAssignment } from '../assignments/returns';
+import { returningUser } from '../users/returns';
 
 @Resolver(() => RequestReturn)
 export class RequestReturnsResolver {
@@ -93,7 +93,7 @@ export class RequestReturnsResolver {
     return this.requestReturnsService.deleteRequestReturn(id, userReq.location);
   }
 
-  @ResolveField(() => Asset)
+  @ResolveField(returningAsset)
   async asset(
     @Parent() requestReturn: RequestReturn,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -104,7 +104,7 @@ export class RequestReturnsResolver {
     );
   }
 
-  @ResolveField(() => Assignment)
+  @ResolveField(returningAssignment)
   async assignment(
     @Parent() requestReturn: RequestReturn,
     @CurrentUser() userReq: CurrentUserInterface,
@@ -115,14 +115,14 @@ export class RequestReturnsResolver {
     );
   }
 
-  @ResolveField(() => User, { nullable: true })
+  @ResolveField(returningUser, { nullable: true })
   async acceptedBy(@Parent() requestReturn: RequestReturn) {
-    if (requestReturn.acceptedById)
-      return await this.userService.findOne(requestReturn.acceptedById);
-    else return null;
+    const { acceptedById } = requestReturn;
+    if (!acceptedById) return null;
+    return await this.userService.findOne(acceptedById);
   }
 
-  @ResolveField(() => User)
+  @ResolveField(returningUser)
   async requestedBy(
     @Parent() requestReturn: RequestReturn,
     @CurrentUser() userReq: CurrentUserInterface,

@@ -128,8 +128,7 @@ export class AssignmentsResolver {
     );
   }
 
-  @Roles(USER_TYPE.ADMIN)
-  @UseGuards(JwtAccessAuthGuard, RoleGuard)
+  @UseGuards(JwtAccessAuthGuard)
   @Mutation(returningBoolean)
   updateStatusAssignment(
     @Args('updateStatusAssignmentInput')
