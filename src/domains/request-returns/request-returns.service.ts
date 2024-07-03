@@ -3,12 +3,7 @@ import { CreateRequestReturnInput } from './dto/create-request-return.input';
 
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { FindRequestReturnsInput } from './dto/find-request-returns.input';
-import {
-  ASSET_STATE,
-  LOCATION,
-  Prisma,
-  REQUEST_RETURN_STATE,
-} from '@prisma/client';
+import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
 import { FindRequestReturnsOutput } from './dto/find-request-returns.output';
 import { MyBadRequestException } from 'src/shared/exceptions';
 
@@ -17,86 +12,53 @@ export class RequestReturnsService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findRequestReturns(
-    request: FindRequestReturnsInput,
+    input: FindRequestReturnsInput,
     location: LOCATION,
-  ) {
-    const {
-      page = 1,
-      limit = 20,
-      query = '',
-      sortField = 'id',
-      sortOrder = 'asc',
-      stateFilter,
-      returnedDateFilter,
-    } = request;
-    const where: Prisma.RequestReturnWhereInput = {};
-
-    if (query) {
-      where.OR = [
-        { asset: { assetName: { contains: query } } },
-        { asset: { assetCode: { contains: query } } },
-        { requestedBy: { username: { contains: query } } },
-      ];
-    }
-
-    if (stateFilter) {
-      where.state = { in: stateFilter };
-    }
-
-    if (returnedDateFilter) {
-      where.returnedDate = returnedDateFilter;
-    }
-
-    where.assignment.location = location;
-
-    where.isRemoved = false;
+  ): Promise<FindRequestReturnsOutput> {
     try {
-      const total = await this.prismaService.requestReturn.count({ where });
-
-      const orderBy = {};
-
-      switch (sortField) {
-        case 'assetCode':
-          orderBy['asset.assetCode'] = sortOrder;
-          break;
-        case 'assetName':
-          orderBy['asset.assetName'] = sortOrder;
-          break;
-        case 'requestedBy':
-          orderBy['requestedBy.username'] = sortOrder;
-          break;
-        case 'acceptedBy':
-          orderBy['acceptedBy.username'] = sortOrder;
-          break;
-        default:
-          orderBy[sortField] = sortOrder;
-      }
+      const whereCondition = {
+        OR: [
+          { asset: { assetName: { contains: input.query } } },
+          { asset: { assetCode: { contains: input.query } } },
+          { requestedBy: { username: { contains: input.query } } },
+        ],
+        state:
+          input.stateFilter.length > 0 ? { in: input.stateFilter } : undefined,
+        returnedDate: input.returnedDateFilter
+          ? input.returnedDateFilter
+          : undefined,
+        assignment: { location },
+        isRemoved: false,
+      };
 
       const requestReturns = await this.prismaService.requestReturn.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy,
+        where: whereCondition,
+        skip: (input.page - 1) * input.limit,
+        take: input.limit,
+        orderBy: input.sortField
+          ? { [input.sortField]: input.sortOrder }
+          : undefined,
       });
 
-      const totalPages = Math.ceil(total / limit);
+      const total = await this.prismaService.requestReturn.count({
+        where: whereCondition,
+      });
 
-      const result = new FindRequestReturnsOutput();
-      result.requestReturns = requestReturns.map((item) => ({
-        ...item,
-        assignedDate: item.assignedDate.toISOString(),
-        returnedDate: item.returnedDate.toISOString(),
-      }));
-      result.page = page;
-      result.limit = limit;
-      result.total = total;
-      result.totalPages = totalPages;
-      return result;
+      return {
+        requestReturns: requestReturns.map((r) => ({
+          ...r,
+          assignedDate: r.assignedDate?.toISOString() || null,
+          returnedDate: r.returnedDate?.toISOString() || null,
+        })),
+        page: input.page,
+        limit: input.limit,
+        total,
+        totalPages: Math.ceil(total / input.limit),
+      };
     } catch (error) {
       throw new MyBadRequestException('Error finding request returns');
     }
   }
-
   async findOne(id: number, location: LOCATION) {
     const requestReturn = await this.prismaService.requestReturn.findUnique({
       where: { id, assignment: { location: location } },
@@ -131,10 +93,6 @@ export class RequestReturnsService {
     }
     if (assetId !== assignment.assetId) {
       throw new MyBadRequestException('Asset id not match');
-    }
-
-    if (assignedDate !== assignment.assignedDate.toISOString()) {
-      throw new MyBadRequestException('Assigned date not match');
     }
 
     const requestReturn = await this.prismaService.requestReturn.create({
@@ -195,10 +153,28 @@ export class RequestReturnsService {
         acceptedById: acceptedById,
       },
     });
+
     await this.prismaService.asset.update({
       where: { id: requestReturn.assetId },
       data: { state: ASSET_STATE.AVAILABLE },
     });
+
+    const assignment = await this.prismaService.assignment.update({
+      where: { id: requestReturn.assignmentId },
+      data: { isRemoved: true },
+    });
+
+    const check = await this.prismaService.assignment.findFirst({
+      where: { assignedToId: assignment.assignedToId, isRemoved: false },
+    });
+
+    if (!check) {
+      await this.prismaService.user.update({
+        where: { id: assignment.assignedToId },
+        data: { isAssigned: false },
+      });
+    }
+
     return result;
   }
 }
