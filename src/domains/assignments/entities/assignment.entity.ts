@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, GraphQLISODateTime } from '@nestjs/graphql';
 import { Asset } from 'src/domains/assets/entities/asset.entity';
 import { User } from 'src/domains/users/entities/user.entity';
 import { ASSIGNMENT_STATE } from 'src/shared/enums';
@@ -28,7 +28,7 @@ export class Assignment {
   @Field({ nullable: true })
   note: string;
 
-  @Field()
+  @Field(() => GraphQLISODateTime)
   assignedDate: string;
 
   @Field(() => Asset, { name: 'asset' })
