@@ -100,11 +100,11 @@ export class AssetsService {
 
   async findAssets(request: FindAssetsInput, location: LOCATION) {
     const {
-      page = 1,
-      limit = 20,
+      page,
+      limit,
       query,
-      sortField = 'assetCode',
-      sortOrder = 'asc',
+      sortField,
+      sortOrder,
       stateFilter,
       categoryFilter,
     } = request;
@@ -234,6 +234,7 @@ export class AssetsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+    console.log(history);
     return history;
   }
 }
