@@ -151,7 +151,6 @@ export class AssignmentsService {
     }
     where.isRemoved = false;
     where.assignedToId = { not: reqUser.id };
-    where.assignedDate = { lte: new Date().toISOString() };
     const orderBy = { [sort]: sortOrder };
 
     const total = await this.prismaService.assignment.count({ where });
@@ -354,6 +353,7 @@ export class AssignmentsService {
 
     where.isRemoved = false;
     where.state = { not: ASSIGNMENT_STATE.DECLINED };
+    where.assignedDate = { lte: new Date().toISOString() };
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
       where,
@@ -407,6 +407,13 @@ export class AssignmentsService {
           where: { id: assignment.assignedToId },
           data: {
             isAssigned: true,
+          },
+        });
+      } else {
+        await prisma.asset.update({
+          where: { id: assignment.assetId },
+          data: {
+            isReadyAssigned: true,
           },
         });
       }
