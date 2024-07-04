@@ -149,15 +149,12 @@ export class AssignmentsService {
     if (reqUser) {
       where.location = reqUser.location; // Map to Prisma enum
     }
-
+    where.isRemoved = false;
     const orderBy = { [sort]: sortOrder };
 
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
-      where: {
-        ...where,
-        isRemoved: false,
-      },
+      where: where,
       skip: (page - 1) * limit,
       take: limit,
       orderBy,
@@ -353,12 +350,10 @@ export class AssignmentsService {
 
     const orderBy = { [sort]: sortOrder };
 
+    where.isRemoved = false;
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
-      where: {
-        ...where,
-        isRemoved: false,
-      },
+      where,
       skip: (page - 1) * limit,
       take: limit,
       orderBy,

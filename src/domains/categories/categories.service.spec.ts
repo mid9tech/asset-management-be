@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesService } from './categories.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
+import { CreateCategoryInput } from './dto/create-category.input';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
   MyInternalException,
 } from 'src/shared/exceptions';
-import { CreateCategoryInput } from './dto/create-category.input';
 import { ReportInput } from './dto/report.input';
 
 describe('CategoriesService', () => {
@@ -39,7 +39,7 @@ describe('CategoriesService', () => {
 
   describe('create', () => {
     it('should throw an error if category name already exists', async () => {
-      mockPrismaService.category.findUnique.mockResolvedValueOnce(true);
+      jest.spyOn(service, 'categoryNameExists').mockResolvedValueOnce(true);
 
       const createCategoryInput: CreateCategoryInput = {
         categoryName: 'Existing Category',
@@ -52,8 +52,8 @@ describe('CategoriesService', () => {
     });
 
     it('should throw an error if category code already exists', async () => {
-      mockPrismaService.category.findUnique.mockResolvedValueOnce(null);
-      mockPrismaService.category.findFirst.mockResolvedValueOnce(true);
+      jest.spyOn(service, 'categoryNameExists').mockResolvedValueOnce(false);
+      jest.spyOn(service, 'categoryCodeExists').mockResolvedValueOnce(true);
 
       const createCategoryInput: CreateCategoryInput = {
         categoryName: 'New Category',
@@ -71,8 +71,8 @@ describe('CategoriesService', () => {
         categoryCode: 'NWC',
       };
 
-      mockPrismaService.category.findUnique.mockResolvedValueOnce(null);
-      mockPrismaService.category.findFirst.mockResolvedValueOnce(null);
+      jest.spyOn(service, 'categoryNameExists').mockResolvedValueOnce(false);
+      jest.spyOn(service, 'categoryCodeExists').mockResolvedValueOnce(false);
       mockPrismaService.category.create.mockResolvedValueOnce({
         id: 1,
         ...createCategoryInput,
@@ -97,7 +97,7 @@ describe('CategoriesService', () => {
 
   describe('categoryCodeExists', () => {
     it('should return true if category code exists', async () => {
-      mockPrismaService.category.findFirst.mockResolvedValueOnce(true);
+      mockPrismaService.category.findFirst.mockResolvedValueOnce({});
 
       const result = await service.categoryCodeExists('CAT1');
       expect(result).toBe(true);
@@ -121,14 +121,14 @@ describe('CategoriesService', () => {
 
   describe('categoryNameExists', () => {
     it('should return true if category name exists', async () => {
-      mockPrismaService.category.findUnique.mockResolvedValueOnce(true);
+      mockPrismaService.category.findMany.mockResolvedValueOnce([{}]);
 
       const result = await service.categoryNameExists('Category1');
       expect(result).toBe(true);
     });
 
     it('should return false if category name does not exist', async () => {
-      mockPrismaService.category.findUnique.mockResolvedValueOnce(null);
+      mockPrismaService.category.findMany.mockResolvedValueOnce([]);
 
       const result = await service.categoryNameExists('Category1');
       expect(result).toBe(false);
@@ -146,6 +146,14 @@ describe('CategoriesService', () => {
 
       const result = await service.getPrefixById(1);
       expect(result).toBe('CAT1');
+    });
+
+    it('should throw an exception if category is not found by id', async () => {
+      mockPrismaService.category.findUnique.mockResolvedValueOnce(null);
+
+      await expect(service.getPrefixById(1)).rejects.toThrow(
+        MyEntityNotFoundException,
+      );
     });
   });
 

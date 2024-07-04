@@ -52,12 +52,16 @@ export class CategoriesService {
   }
 
   async categoryNameExists(categoryName: string): Promise<boolean> {
-    const category = await this.prismaService.category.findUnique({
+    const category = await this.prismaService.category.findMany({
       where: {
-        categoryName: categoryName,
+        categoryName: {
+          equals: categoryName,
+
+          mode: 'insensitive',
+        },
       },
     });
-    return category !== null;
+    return category.length > 0;
   }
 
   async getPrefixById(id: number): Promise<string> {
@@ -66,6 +70,11 @@ export class CategoriesService {
         id: id,
       },
     });
+
+    if (!category) {
+      throw new MyEntityNotFoundException(ENTITY_NAME.CATEGORY);
+    }
+
     return category.categoryCode;
   }
 
