@@ -40,6 +40,17 @@ describe('AuthService', () => {
     state: false,
   };
 
+  const mockDisabledUser = {
+    id: 1,
+    username: 'testuser',
+    password: 'hashedpassword',
+    firstName: 'Test',
+    lastName: 'User',
+    type: USER_TYPE.USER,
+    state: true,
+    isDisabled: true,
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -70,7 +81,17 @@ describe('AuthService', () => {
         BadRequestException,
       );
     });
+    it('should throw an error if the user is disabled', async () => {
+      mockUsersService.findOneByUsername.mockResolvedValue(mockDisabledUser);
+      const loginInput: LoginInput = {
+        username: 'testuser',
+        password: 'hashedpassword',
+      };
 
+      await expect(service.login(loginInput)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
     it('should throw an error if the password is incorrect', async () => {
       mockUsersService.findOneByUsername.mockResolvedValue(mockUser);
       (IsCorrectPW as jest.Mock).mockResolvedValue(false);

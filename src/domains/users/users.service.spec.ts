@@ -10,6 +10,7 @@ import {
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import PrismaServiceMock from 'src/services/prisma/__mocks__/mock-prisma.service';
 import {
+  assignmentDataPrismaMock,
   currentUserMock,
   findUserInputMock,
   findUserOutputMock,
@@ -109,11 +110,10 @@ describe('UsersService', () => {
   // Update user tests
   describe('update', () => {
     it('should update a user', async () => {
-      const result = await usersService.update(1, userInputMock[0]);
-      expect(result).toEqual(userDataMock);
-    });
+      jest
+        .spyOn(prismaServiceMock.assignment, 'findFirst')
+        .mockResolvedValue(null);
 
-    it('should update a user with valid input', async () => {
       const result = await usersService.update(1, userInputMock[0]);
       expect(result).toEqual(userDataMock);
     });
@@ -155,6 +155,16 @@ describe('UsersService', () => {
       });
       await expect(usersService.update(1, userInputMock[6])).rejects.toThrow(
         MyForbiddenException,
+      );
+    });
+
+    it('should return MyBadRequestException becasue Assignment is in Process', async () => {
+      jest
+        .spyOn(prismaServiceMock.assignment, 'findFirst')
+        .mockResolvedValue(assignmentDataPrismaMock);
+
+      await expect(usersService.update(1, userInputMock[0])).rejects.toThrow(
+        MyBadRequestException,
       );
     });
   });

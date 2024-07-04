@@ -17,6 +17,7 @@ import { CurrentUserInterface } from 'src/shared/generics';
 import { MyBadRequestException } from 'src/shared/exceptions';
 
 import { Category } from '../categories/entities/category.entity';
+import { RequestReturn } from '../request-returns/entities/request-return.entity';
 
 describe('AssetsResolver', () => {
   let resolver: AssetsResolver;
@@ -63,6 +64,31 @@ describe('AssetsResolver', () => {
     categoryCode: 'CAT',
   };
 
+  const mockHistory: RequestReturn[] = [
+    {
+      id: 1,
+      assetId: 1,
+      assignmentId: 1,
+      requestedById: 1,
+      acceptedById: 2,
+      assignedDate: new Date('2021-01-01').toISOString(),
+      returnedDate: new Date('2021-01-10').toISOString(),
+      state: 'COMPLETED',
+      isRemoved: false,
+    },
+    {
+      id: 2,
+      assetId: 1,
+      assignmentId: 2,
+      requestedById: 2,
+      acceptedById: null,
+      assignedDate: new Date('2021-02-01').toISOString(),
+      returnedDate: null,
+      state: 'PENDING',
+      isRemoved: false,
+    },
+  ];
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -95,6 +121,7 @@ describe('AssetsResolver', () => {
                 return Promise.resolve(mockAsset);
               }),
             remove: jest.fn().mockResolvedValue(mockAsset),
+            findHistory: jest.fn().mockResolvedValue(mockHistory),
           },
         },
         {
@@ -361,6 +388,26 @@ describe('AssetsResolver', () => {
       jest.spyOn(categoriesService, 'findById').mockResolvedValueOnce(null);
 
       await expect(resolver.category(mockAsset)).resolves.toBeNull();
+    });
+  });
+
+  describe('history', () => {
+    it('should find history of an asset by id', async () => {
+      const result = await resolver.history(mockAsset);
+      expect(result).toEqual(mockHistory);
+      expect(assetsService.findHistory).toHaveBeenCalledWith(1);
+    });
+
+    it('should throw an exception when findHistory fails', async () => {
+      jest
+        .spyOn(assetsService, 'findHistory')
+        .mockRejectedValueOnce(
+          new MyBadRequestException('Error finding history'),
+        );
+
+      await expect(resolver.history(mockAsset)).rejects.toThrow(
+        MyBadRequestException,
+      );
     });
   });
 });

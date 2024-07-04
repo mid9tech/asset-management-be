@@ -223,4 +223,17 @@ export class AssetsService {
     });
     return result;
   }
+
+  async findHistory(assetId: number) {
+    const history = await this.prismaService.requestReturn.findMany({
+      where: {
+        assetId,
+        assignment: {
+          isRemoved: true,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return history;
+  }
 }

@@ -32,7 +32,7 @@ export class RequestReturnsService {
           { requestedBy: { username: { contains: input.query } } },
         ],
         state: { in: stateFilter },
-        returnedDate: input.returnedDateFilter ? returnedDateFilter : undefined,
+        returnedDate: returnedDateFilter,
         assignment: { location },
         isRemoved: false,
       };
