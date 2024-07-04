@@ -150,6 +150,8 @@ export class AssignmentsService {
       where.location = reqUser.location; // Map to Prisma enum
     }
     where.isRemoved = false;
+    where.assignedToId = { not: reqUser.id };
+    where.assignedDate = { lte: new Date().toISOString() };
     const orderBy = { [sort]: sortOrder };
 
     const total = await this.prismaService.assignment.count({ where });
@@ -351,6 +353,7 @@ export class AssignmentsService {
     const orderBy = { [sort]: sortOrder };
 
     where.isRemoved = false;
+    where.state = { not: ASSIGNMENT_STATE.DECLINED };
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
       where,

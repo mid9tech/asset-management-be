@@ -37,6 +37,7 @@ type Asset {
   location: String!
   specification: String
   category: Category!
+  history: [RequestReturn!]!
 }
 
 type FindAssetsOutput {
@@ -71,6 +72,30 @@ type ReportResponse {
   data: [ReportElement!]!
 }
 
+type RequestReturn {
+  id: Int!
+  assetId: Int!
+  assignmentId: Int!
+  requestedById: Int!
+  acceptedById: Int
+  assignedDate: String!
+  returnedDate: String
+  state: String!
+  isRemoved: Boolean!
+  asset: Asset!
+  assignment: Assignment!
+  acceptedBy: User
+  requestedBy: User!
+}
+
+type FindRequestReturnsOutput {
+  page: Int
+  limit: Int
+  total: Int
+  totalPages: Int
+  requestReturns: [RequestReturn!]!
+}
+
 type Assignment {
   id: Int!
   assetCode: String!
@@ -96,30 +121,6 @@ type FindAssignmentsOutput {
   total: Int
   totalPages: Int
   assignments: [Assignment!]!
-}
-
-type RequestReturn {
-  id: Int!
-  assetId: Int!
-  assignmentId: Int!
-  requestedById: Int!
-  acceptedById: Int
-  assignedDate: String!
-  returnedDate: String
-  state: String!
-  isRemoved: Boolean!
-  asset: Asset!
-  assignment: Assignment!
-  acceptedBy: User
-  requestedBy: User!
-}
-
-type FindRequestReturnsOutput {
-  page: Int
-  limit: Int
-  total: Int
-  totalPages: Int
-  requestReturns: [RequestReturn!]!
 }
 
 type Query {

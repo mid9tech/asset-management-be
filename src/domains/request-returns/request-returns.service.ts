@@ -18,12 +18,7 @@ export class RequestReturnsService {
 
   async findRequestReturns(input: FindRequestReturnsInput, location: LOCATION) {
     try {
-      const {
-        stateFilter = [],
-        returnedDateFilter,
-        sortField,
-        sortOrder,
-      } = input;
+      const { stateFilter, returnedDateFilter, sortField, sortOrder } = input;
 
       const whereCondition = {
         OR: [
@@ -189,7 +184,7 @@ export class RequestReturnsService {
 
     await this.prismaService.asset.update({
       where: { id: requestReturn.assetId },
-      data: { state: ASSET_STATE.AVAILABLE },
+      data: { state: ASSET_STATE.AVAILABLE, isReadyAssigned: true },
     });
 
     const assignment = await this.prismaService.assignment.update({
