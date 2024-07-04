@@ -57,6 +57,10 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('Username or password is incorrect!');
     }
+    if (user.isDisabled) {
+      throw new BadRequestException('This user is disabled!');
+    }
+
     if (!(await IsCorrectPW(user.password, loginInput.password))) {
       throw new BadRequestException('Username or password is incorrect!');
     }

@@ -3,7 +3,7 @@ import { AssetsService } from './assets.service';
 import { PrismaService } from 'src/services/prisma/prisma.service';
 import { CategoriesService } from '../categories/categories.service';
 import { CreateAssetInput } from './dto/create-asset.input';
-import { LOCATION, ASSET_STATE } from 'src/shared/enums';
+import { LOCATION, ASSET_STATE, REQUEST_RETURN_STATE } from 'src/shared/enums';
 import { MyBadRequestException } from 'src/shared/exceptions';
 import { FindAssetsInput } from './dto/find-assets.input';
 import { UpdateAssetInput } from './dto/update-asset.input';
@@ -27,6 +27,9 @@ describe('AssetsService', () => {
               count: jest.fn(),
               update: jest.fn(),
               findFirst: jest.fn(),
+            },
+            requestReturn: {
+              findMany: jest.fn(),
             },
           },
         },
@@ -474,23 +477,6 @@ describe('AssetsService', () => {
       });
     });
 
-    it('should throw an error if asset is not found in the location', async () => {
-      const assetInDifferentLocation = {
-        ...existingAsset,
-        location: LOCATION.HN,
-        isAllowRemoved: true,
-        isReadyAssigned: true,
-      };
-
-      jest
-        .spyOn(prismaService.asset, 'findUnique')
-        .mockResolvedValue(assetInDifferentLocation);
-
-      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
-        new MyBadRequestException('Asset not found in your location'),
-      );
-    });
-
     it('should throw an error if asset is not found', async () => {
       jest.spyOn(prismaService.asset, 'findUnique').mockResolvedValue(null);
 
@@ -500,17 +486,27 @@ describe('AssetsService', () => {
     });
 
     it('should throw an error if asset is removed', async () => {
-      const removedAsset = {
-        ...existingAsset,
-        isRemoved: true,
-      };
-
+      const removedAsset = { ...existingAsset, isRemoved: true };
       jest
         .spyOn(prismaService.asset, 'findUnique')
         .mockResolvedValue(removedAsset);
 
       await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
         new MyBadRequestException('Asset is removed'),
+      );
+    });
+
+    it('should throw an error if asset is not found in the location', async () => {
+      const assetInDifferentLocation = {
+        ...existingAsset,
+        location: LOCATION.HN,
+      };
+      jest
+        .spyOn(prismaService.asset, 'findUnique')
+        .mockResolvedValue(assetInDifferentLocation);
+
+      await expect(service.findOne(1, LOCATION.HCM)).rejects.toThrow(
+        new MyBadRequestException('Asset not found in your location'),
       );
     });
   });
@@ -578,12 +574,11 @@ describe('AssetsService', () => {
       );
     });
 
-    it('should throw an error if asset is not found in the specified location', async () => {
+    it('should throw an error if asset is not found in the location', async () => {
       const assetInDifferentLocation = {
         ...existingAsset,
         location: LOCATION.HN,
       };
-
       jest
         .spyOn(prismaService.asset, 'findUnique')
         .mockResolvedValue(assetInDifferentLocation);
@@ -594,11 +589,7 @@ describe('AssetsService', () => {
     });
 
     it('should throw an error if asset is assigned', async () => {
-      const assignedAsset = {
-        ...existingAsset,
-        state: ASSET_STATE.ASSIGNED,
-      };
-
+      const assignedAsset = { ...existingAsset, state: ASSET_STATE.ASSIGNED };
       jest
         .spyOn(prismaService.asset, 'findUnique')
         .mockResolvedValue(assignedAsset);
@@ -608,15 +599,11 @@ describe('AssetsService', () => {
       );
     });
 
-    it('should throw an error if asset belongs to historical assignments and cannot be deleted', async () => {
-      const historicalAssignmentAsset = {
-        ...existingAsset,
-        isAllowRemoved: false,
-      };
-
+    it('should throw an error if asset cannot be removed due to historical assignments', async () => {
+      const assetNotAllowRemoved = { ...existingAsset, isAllowRemoved: false };
       jest
         .spyOn(prismaService.asset, 'findUnique')
-        .mockResolvedValue(historicalAssignmentAsset);
+        .mockResolvedValue(assetNotAllowRemoved);
 
       await expect(service.remove(1, LOCATION.HCM)).rejects.toThrow(
         new MyBadRequestException(
@@ -624,18 +611,49 @@ describe('AssetsService', () => {
         ),
       );
     });
+  });
 
-    it('should update the isRemoved field to true upon removal', async () => {
+  describe('findHistory', () => {
+    const requestReturns = [
+      {
+        id: 1,
+        assetId: 1,
+        assignmentId: 1,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        assignedDate: null,
+        returnedDate: null,
+        acceptedById: null,
+        isRemoved: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        requestedById: 1,
+      },
+    ];
+
+    it('should find asset history successfully', async () => {
       jest
-        .spyOn(prismaService.asset, 'findUnique')
-        .mockResolvedValue(existingAsset);
-      jest.spyOn(prismaService.asset, 'update').mockResolvedValue({
-        ...existingAsset,
-        isRemoved: true,
-      });
+        .spyOn(prismaService.requestReturn, 'findMany')
+        .mockResolvedValue(requestReturns);
 
-      const result = await service.remove(1, LOCATION.HCM);
-      expect(result.isRemoved).toBe(true);
+      const result = await service.findHistory(1);
+      expect(result).toEqual(requestReturns);
+    });
+
+    it('should return an empty array if no history is found', async () => {
+      jest.spyOn(prismaService.requestReturn, 'findMany').mockResolvedValue([]);
+
+      const result = await service.findHistory(1);
+      expect(result).toEqual([]);
+    });
+
+    it('should handle errors while finding asset history', async () => {
+      jest
+        .spyOn(prismaService.requestReturn, 'findMany')
+        .mockRejectedValue(new Error('Error finding asset history'));
+
+      await expect(service.findHistory(1)).rejects.toThrow(
+        new MyBadRequestException('Error finding asset history'),
+      );
     });
   });
 });

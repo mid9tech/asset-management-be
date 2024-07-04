@@ -23,6 +23,7 @@ import { UpdateAssetInput } from './dto/update-asset.input';
 import { returningAsset, returningFindAssetsOutput } from './returns';
 import { returningInt } from 'src/shared/constants';
 import { returningCategory } from '../categories/returns';
+import { returningRequestReturns } from '../request-returns/returns';
 
 @Resolver(() => Asset)
 export class AssetsResolver {
@@ -91,5 +92,10 @@ export class AssetsResolver {
     @CurrentUser() userReq: CurrentUserInterface,
   ) {
     return await this.assetsService.remove(id, userReq.location);
+  }
+
+  @ResolveField(returningRequestReturns)
+  async history(@Parent() asset: Asset) {
+    return await this.assetsService.findHistory(asset.id);
   }
 }

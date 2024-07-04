@@ -215,6 +215,22 @@ export class UsersService {
         );
       }
 
+      if (updateUserInput.location) {
+        const checkAssigner = await this.prismaService.assignment.findFirst({
+          where: { assignedById: id, isRemoved: false },
+        });
+
+        const checkAssignee = await this.prismaService.assignment.findFirst({
+          where: { assignedToId: id, isRemoved: false },
+        });
+
+        if (checkAssignee || checkAssigner) {
+          throw new MyBadRequestException(
+            'You are on assignment process, please finish it first!',
+          );
+        }
+      }
+
       const result = await this.prismaService.user.update({
         where: { id },
         data: {

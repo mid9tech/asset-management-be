@@ -15,6 +15,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:export": "jest --coverage --coverageDirectory='coverage'",
+    "test:ci": "jest --ci --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "start": "dotenv -e .env.development -- nest start",
@@ -53,6 +54,8 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
     "graphql": "^16.8.2",
+    "jest-junit": "^16.0.0",
+    "jest-junit-reporter": "^1.1.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.0",
@@ -105,7 +108,9 @@
     ],
     "coverageReporters": [
       "text",
-      "lcov"
+      "lcov",
+      "cobertura",
+      "html"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
@@ -116,6 +121,17 @@
       "/node_modules/",
       "/test-utils/",
       "src/setupTests.js"
-    ]
+    ],
+    "reporters": [
+      "default",
+      [
+        "jest-junit",
+        {
+          "outputDirectory": "./coverage/test-report",
+          "outputName": "test-report.xml"
+        }
+      ]
+    ],
+    "collectCoverage": true
   }
 }
