@@ -359,6 +359,7 @@ export class AssignmentsService {
     where.isRemoved = false;
     where.state = { not: ASSIGNMENT_STATE.DECLINED };
     where.assignedDate = { lte: new Date().toISOString() };
+    where.assignedDate = { lte: new Date().toISOString() };
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
       where,
