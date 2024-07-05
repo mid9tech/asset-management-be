@@ -26,17 +26,21 @@ export class RequestReturnsService {
           { requestedBy: { username: { contains: input.query } } },
         ],
         state: { in: stateFilter },
-        returnedDate: {
+
+        assignment: { location },
+        isRemoved: false,
+      };
+
+      if (returnedDateFilter) {
+        whereCondition['returnedDate'] = {
           gte: returnedDateFilter
             ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
             : null,
           lte: returnedDateFilter
             ? new Date(new Date(returnedDateFilter).setHours(23, 59, 59, 599))
             : null,
-        },
-        assignment: { location },
-        isRemoved: false,
-      };
+        };
+      }
 
       const orderBy: Prisma.RequestReturnOrderByWithRelationInput = {};
 
