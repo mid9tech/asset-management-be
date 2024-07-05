@@ -409,6 +409,13 @@ export class AssignmentsService {
             isAssigned: true,
           },
         });
+
+        await prisma.asset.update({
+          where: { id: assignment.assetId },
+          data: {
+            state: ASSET_STATE.ASSIGNED,
+          },
+        });
       } else {
         await prisma.asset.update({
           where: { id: assignment.assetId },
