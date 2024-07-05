@@ -234,7 +234,6 @@ export class AssetsService {
       },
       orderBy: { createdAt: 'desc' },
     });
-    console.log(history);
     return history;
   }
 }

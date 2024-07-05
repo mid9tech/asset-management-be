@@ -19,7 +19,6 @@ export class RequestReturnsService {
   async findRequestReturns(input: FindRequestReturnsInput, location: LOCATION) {
     try {
       const { stateFilter, returnedDateFilter, sortField, sortOrder } = input;
-
       const whereCondition = {
         OR: [
           { asset: { assetName: { contains: input.query } } },
@@ -27,7 +26,14 @@ export class RequestReturnsService {
           { requestedBy: { username: { contains: input.query } } },
         ],
         state: { in: stateFilter },
-        returnedDate: returnedDateFilter,
+        returnedDate: {
+          gte: returnedDateFilter
+            ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
+            : null,
+          lte: returnedDateFilter
+            ? new Date(new Date(returnedDateFilter).setHours(23, 59, 59, 599))
+            : null,
+        },
         assignment: { location },
         isRemoved: false,
       };

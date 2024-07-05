@@ -108,6 +108,7 @@ type Assignment {
   asset: Asset!
   assignedByUsername: String
   assignedToUsername: String
+  isWaitingReturning: Boolean!
 }
 
 """

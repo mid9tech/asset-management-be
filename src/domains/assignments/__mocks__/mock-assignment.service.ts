@@ -15,6 +15,7 @@ import {
   UpdateAssignmentInput,
   UpdateStatusAssignmentInput,
 } from '../dto/update-assignment.input';
+import { LOCATION } from 'src/shared/enums';
 
 export default class AssignmentsServiceMock {
   create = jest
@@ -161,4 +162,10 @@ export default class AssignmentsServiceMock {
         return true;
       },
     );
+
+  isWaitingReturning = jest
+    .fn()
+    .mockImplementation((id: number, location: LOCATION) => {
+      return id && location;
+    });
 }
