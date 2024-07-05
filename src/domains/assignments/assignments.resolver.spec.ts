@@ -170,4 +170,15 @@ describe('AssignmentsResolver', () => {
       expect(result).toEqual(true);
     });
   });
+
+  describe('isRequestReturning', () => {
+    it('should return the assignee', async () => {
+      const assignment = { assignedToId: 1 } as any;
+      const result = await resolver.isWaitingReturning(
+        assignment,
+        currentUserMock,
+      );
+      expect(result).toEqual(undefined);
+    });
+  });
 });

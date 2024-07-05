@@ -33,4 +33,8 @@ export default class PrismaServiceMock {
   $transaction = jest.fn().mockImplementation((callback) => {
     return callback(this); // Ensure the callback receives the PrismaServiceMock instance
   });
+
+  requestReturn = {
+    findFirst: jest.fn().mockReturnValue(true),
+  };
 }

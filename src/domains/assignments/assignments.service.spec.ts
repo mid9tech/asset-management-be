@@ -387,5 +387,37 @@ describe('AssignmentsService', () => {
         ),
       ).rejects.toThrow(MyBadRequestException);
     });
+
+    it('should return true and update asset status because update status assignment by id successfully', async () => {
+      const result = await assignmentService.updateStatusAssignment(
+        { id: 1, state: ASSIGNMENT_STATE.DECLINED },
+        currentUserMock,
+      );
+      expect(result).toEqual(true);
+    });
+  });
+
+  describe('is waiting returning', () => {
+    it('should return true', async () => {
+      const result = await assignmentService.isWaitingReturning(
+        1,
+        currentUserMock.location,
+      );
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false', async () => {
+      jest
+        .spyOn(prismaService.requestReturn, 'findFirst')
+        .mockResolvedValue(null);
+
+      const result = await assignmentService.isWaitingReturning(
+        1,
+        currentUserMock.location,
+      );
+
+      expect(result).toEqual(false);
+    });
   });
 });
