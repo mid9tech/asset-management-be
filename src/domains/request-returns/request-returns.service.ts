@@ -27,20 +27,21 @@ export class RequestReturnsService {
         ],
         state: { in: stateFilter },
 
+        returnedDate: returnedDateFilter
+          ? {
+              gte: returnedDateFilter
+                ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
+                : null,
+              lte: returnedDateFilter
+                ? new Date(
+                    new Date(returnedDateFilter).setHours(23, 59, 59, 599),
+                  )
+                : null,
+            }
+          : undefined,
         assignment: { location },
         isRemoved: false,
       };
-
-      if (returnedDateFilter) {
-        whereCondition['returnedDate'] = {
-          gte: returnedDateFilter
-            ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
-            : null,
-          lte: returnedDateFilter
-            ? new Date(new Date(returnedDateFilter).setHours(23, 59, 59, 599))
-            : null,
-        };
-      }
 
       const orderBy: Prisma.RequestReturnOrderByWithRelationInput = {};
 
