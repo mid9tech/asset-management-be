@@ -140,4 +140,15 @@ export class AssignmentsResolver {
       userReq,
     );
   }
+
+  @ResolveField(returningBoolean, { name: 'isWaitingReturning' })
+  isWaitingReturning(
+    @Parent() assignment: Assignment,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.assignmentsService.isWaitingReturning(
+      assignment.id,
+      userReq.location,
+    );
+  }
 }

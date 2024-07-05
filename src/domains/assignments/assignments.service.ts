@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { CreateAssignmentInput } from './dto/create-assignment.input';
 import { CurrentUserInterface } from 'src/shared/generics';
 import { PrismaService } from 'src/services/prisma/prisma.service';
-import { ASSET_STATE, ASSIGNMENT_STATE, LOCATION } from 'src/shared/enums';
+import {
+  ASSET_STATE,
+  ASSIGNMENT_STATE,
+  LOCATION,
+  REQUEST_RETURN_STATE,
+} from 'src/shared/enums';
 import {
   MyBadRequestException,
   MyEntityNotFoundException,
@@ -354,6 +359,7 @@ export class AssignmentsService {
     where.isRemoved = false;
     where.state = { not: ASSIGNMENT_STATE.DECLINED };
     where.assignedDate = { lte: new Date().toISOString() };
+    where.assignedDate = { lte: new Date().toISOString() };
     const total = await this.prismaService.assignment.count({ where });
     const assignments = await this.prismaService.assignment.findMany({
       where,
@@ -431,5 +437,18 @@ export class AssignmentsService {
     // End transaction
 
     return result; // Return true on successful update
+  }
+
+  async isWaitingReturning(id: number, location: LOCATION) {
+    const check = await this.prismaService.requestReturn.findFirst({
+      where: {
+        assignmentId: id,
+        isRemoved: false,
+        state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
+        assignment: { location: location },
+      },
+    });
+
+    return check ? true : false;
   }
 }
