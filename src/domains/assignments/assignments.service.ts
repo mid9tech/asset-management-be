@@ -198,9 +198,9 @@ export class AssignmentsService {
       throw new MyEntityNotFoundException(ENTITY_NAME.ASSIGNMENT);
     }
 
-    if (assignment.state !== ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE) {
+    if (assignment.state === ASSIGNMENT_STATE.ACCEPTED) {
       throw new MyBadRequestException(
-        'Cannot remove assignment in WAITING_FOR_ACCEPTANCE state',
+        'Cannot remove assignment not in WAITING_FOR_ACCEPTANCE, DECLINED state',
       );
     }
 
