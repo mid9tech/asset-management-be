@@ -26,14 +26,19 @@ export class RequestReturnsService {
           { requestedBy: { username: { contains: input.query } } },
         ],
         state: { in: stateFilter },
-        returnedDate: {
-          gte: returnedDateFilter
-            ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
-            : null,
-          lte: returnedDateFilter
-            ? new Date(new Date(returnedDateFilter).setHours(23, 59, 59, 599))
-            : null,
-        },
+
+        returnedDate: returnedDateFilter
+          ? {
+              gte: returnedDateFilter
+                ? new Date(new Date(returnedDateFilter).setHours(0, 0, 0, 0))
+                : null,
+              lte: returnedDateFilter
+                ? new Date(
+                    new Date(returnedDateFilter).setHours(23, 59, 59, 599),
+                  )
+                : null,
+            }
+          : undefined,
         assignment: { location },
         isRemoved: false,
       };
