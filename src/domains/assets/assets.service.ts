@@ -85,7 +85,7 @@ export class AssetsService {
       ...updateAssetInput,
       installedDate: new Date(updateAssetInput.installedDate).toISOString(),
       state: ASSET_STATE[updateAssetInput.state],
-      specification: updateAssetInput.specification || asset.specification,
+      specification: updateAssetInput.specification,
     };
     const result = await this.prismaService.asset.update({
       where: { id },
