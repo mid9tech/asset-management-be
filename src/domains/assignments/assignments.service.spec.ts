@@ -209,6 +209,16 @@ describe('AssignmentsService', () => {
       expect(result).toEqual(true);
     });
 
+    it('should return true because remove assignment by id successfully', async () => {
+      jest.spyOn(prismaService.assignment, 'count').mockResolvedValue(0);
+      
+      const result = await assignmentService.removeAssignment(
+        1,
+        currentUserMock,
+      );
+      expect(result).toEqual(true);
+    });
+
     it('should throw MyEntityNotFoundException because assignment not found', async () => {
       jest.spyOn(prismaService.assignment, 'findFirst').mockResolvedValue(null);
 

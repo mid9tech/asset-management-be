@@ -210,6 +210,29 @@ export class AssignmentsService {
         },
       });
 
+      const isNotAllowRemoved = await this.prismaService.assignment.count({
+        where: {
+          assetId: assignment.assetId,
+          OR: [
+            { state: ASSIGNMENT_STATE.ACCEPTED },
+            {
+              state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+              isRemoved: false,
+            },
+            { state: ASSIGNMENT_STATE.DECLINED, isRemoved: false },
+          ],
+        },
+      });
+
+      if (isNotAllowRemoved === 0) {
+        await prisma.asset.update({
+          where: { id: assignment.assetId },
+          data: {
+            isAllowRemoved: true,
+          },
+        });
+      }
+
       await prisma.asset.update({
         where: { id: assignment.assetId },
         data: {
