@@ -33,6 +33,7 @@ export class AssignmentsService {
     const where: Prisma.AssignmentWhereInput = {};
 
     where.state = { in: state };
+    where.state = { in: state };
 
     if (query) {
       const trimmedQuery = query.trim();
