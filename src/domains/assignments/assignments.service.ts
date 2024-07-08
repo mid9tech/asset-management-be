@@ -33,6 +33,7 @@ export class AssignmentsService {
     const where: Prisma.AssignmentWhereInput = {};
 
     where.state = { in: state };
+    where.state = { in: state };
 
     if (query) {
       const trimmedQuery = query.trim();
@@ -202,30 +203,31 @@ export class AssignmentsService {
       );
     }
 
-    const result = await this.prismaService.$transaction(async (prisma) => {
-      await prisma.assignment.update({
+    const result = await this.prismaService.$transaction(async () => {
+      await this.prismaService.assignment.update({
         where: { id: assignmentId },
         data: {
           isRemoved: true,
         },
       });
 
-      const isNotAllowRemoved = await this.prismaService.assignment.count({
-        where: {
-          assetId: assignment.assetId,
-          OR: [
-            { state: ASSIGNMENT_STATE.ACCEPTED },
-            {
-              state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
-              isRemoved: false,
-            },
-            { state: ASSIGNMENT_STATE.DECLINED, isRemoved: false },
-          ],
-        },
-      });
+      const countExistNotAllowRemove =
+        await this.prismaService.assignment.count({
+          where: {
+            assetId: assignment.assetId,
+            OR: [
+              { state: ASSIGNMENT_STATE.ACCEPTED },
+              {
+                state: ASSIGNMENT_STATE.WAITING_FOR_ACCEPTANCE,
+                isRemoved: false,
+              },
+              { state: ASSIGNMENT_STATE.DECLINED, isRemoved: false },
+            ],
+          },
+        });
 
-      if (isNotAllowRemoved === 0) {
-        await prisma.asset.update({
+      if (countExistNotAllowRemove === 0) {
+        await this.prismaService.asset.update({
           where: { id: assignment.assetId },
           data: {
             isAllowRemoved: true,
@@ -233,7 +235,7 @@ export class AssignmentsService {
         });
       }
 
-      await prisma.asset.update({
+      await this.prismaService.asset.update({
         where: { id: assignment.assetId },
         data: {
           isReadyAssigned: true,
