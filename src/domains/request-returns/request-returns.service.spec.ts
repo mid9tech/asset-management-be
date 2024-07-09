@@ -286,7 +286,6 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
       const checkExist = { id: 1, assignmentId: 1 };
 
       mockPrismaService.requestReturn.findFirst.mockResolvedValueOnce(
@@ -294,7 +293,10 @@ describe('RequestReturnsService', () => {
       );
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -305,12 +307,14 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
 
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(null);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -321,7 +325,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HN,
@@ -332,7 +336,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -343,7 +350,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -354,7 +361,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -365,7 +375,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -376,7 +386,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
   });
