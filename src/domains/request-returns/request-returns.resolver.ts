@@ -65,8 +65,7 @@ export class RequestReturnsResolver {
     @CurrentUser() userReq: CurrentUserInterface,
     @Args('request') request: CreateRequestReturnInput,
   ) {
-    const location = userReq.location;
-    return this.requestReturnsService.createRequestReturn(request, location);
+    return this.requestReturnsService.createRequestReturn(request, userReq);
   }
 
   @Roles(USER_TYPE.ADMIN)

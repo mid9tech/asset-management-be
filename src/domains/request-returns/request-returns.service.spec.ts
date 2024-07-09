@@ -5,6 +5,7 @@ import { MyBadRequestException } from 'src/shared/exceptions';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
 import { FindRequestReturnsInput } from './dto/find-request-returns.input';
 import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
+import { userDataPrismaMock } from 'src/shared/__mocks__';
 
 describe('RequestReturnsService', () => {
   let service: RequestReturnsService;
@@ -256,7 +257,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -273,7 +274,7 @@ describe('RequestReturnsService', () => {
 
       const result = await service.createRequestReturn(
         createRequestReturnInput,
-        location,
+        userDataPrismaMock,
       );
       expect(result).toEqual(requestReturn);
     });
