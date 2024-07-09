@@ -10,6 +10,7 @@ import {
 import { ENTITY_NAME } from 'src/shared/constants';
 import { ReportInput } from './dto/report.input';
 import { Prisma } from '@prisma/client';
+import { LOCATION } from 'src/shared/enums';
 
 @Injectable()
 export class CategoriesService {
@@ -90,23 +91,37 @@ export class CategoriesService {
     return category;
   }
 
-  async getReport(reportInput: ReportInput) {
+  async getReport(reportInput: ReportInput, location: LOCATION) {
     const { limit, page, sort, sortOrder } = reportInput;
 
     const offset = page && limit ? (page - 1) * limit : 0;
 
     try {
-      const totalItems = await this.prismaService.$queryRaw<
-        { count: number }[]
-      >`SELECT COUNT(*)::INTEGER as count FROM asset_report`;
+      let viewName;
+
+      switch (location) {
+        case LOCATION.HCM:
+          viewName = 'asset_report_hcm';
+          break;
+        case LOCATION.HN:
+          viewName = 'asset_report_hn';
+          break;
+        default:
+          viewName = 'asset_report_dn';
+      }
+
+      const countQuery = Prisma.sql`SELECT COUNT(*)::INTEGER as count FROM ${Prisma.raw(viewName)}`;
+
+      const totalItems =
+        await this.prismaService.$queryRaw<{ count: number }[]>(countQuery);
 
       const queryString =
         limit && page
-          ? Prisma.sql`SELECT * FROM asset_report
+          ? Prisma.sql`SELECT * FROM ${Prisma.raw(viewName)}
           ORDER BY ${Prisma.raw(sort)} ${Prisma.raw(sortOrder)}
           LIMIT ${Prisma.raw(limit.toString())}
           OFFSET ${Prisma.raw(offset.toString())}`
-          : Prisma.sql`SELECT * FROM asset_report`;
+          : Prisma.sql`SELECT * FROM ${Prisma.raw(viewName)}`;
 
       const reportData = await this.prismaService.$queryRaw<any[]>(queryString);
 

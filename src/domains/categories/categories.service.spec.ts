@@ -8,6 +8,7 @@ import {
   MyInternalException,
 } from 'src/shared/exceptions';
 import { ReportInput } from './dto/report.input';
+import { LOCATION } from 'src/shared/enums';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
@@ -197,7 +198,34 @@ describe('CategoriesService', () => {
         .mockResolvedValueOnce(totalItems)
         .mockResolvedValueOnce(reportData);
 
-      const result = await service.getReport(reportInput);
+      const result = await service.getReport(reportInput, LOCATION.DN);
+      expect(result).toEqual({
+        total: 5,
+        totalPages: 1,
+        page: 1,
+        limit: 10,
+        data: reportData,
+      });
+    });
+
+    it('should return report data', async () => {
+      const reportInput: ReportInput = {
+        limit: 10,
+        page: 1,
+        sort: 'categoryCode',
+        sortOrder: 'asc',
+      };
+
+      const totalItems = [{ count: 5 }];
+      const reportData = [
+        { id: 1, categoryCode: 'CAT1', categoryName: 'Category1' },
+      ];
+
+      mockPrismaService.$queryRaw
+        .mockResolvedValueOnce(totalItems)
+        .mockResolvedValueOnce(reportData);
+
+      const result = await service.getReport(reportInput, LOCATION.HCM);
       expect(result).toEqual({
         total: 5,
         totalPages: 1,
@@ -217,7 +245,7 @@ describe('CategoriesService', () => {
 
       mockPrismaService.$queryRaw.mockRejectedValueOnce(new Error());
 
-      await expect(service.getReport(reportInput)).rejects.toThrow(
+      await expect(service.getReport(reportInput, LOCATION.HN)).rejects.toThrow(
         MyInternalException,
       );
     });
