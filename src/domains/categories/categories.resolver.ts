@@ -11,8 +11,9 @@ import { ReportInput } from './dto/report.input';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { USER_TYPE } from 'src/shared/enums';
 import { UseGuards } from '@nestjs/common';
-import { JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
+import { CurrentUser, JwtAccessAuthGuard } from 'src/common/guard/jwt.guard';
 import { RoleGuard } from 'src/common/guard/role.guard';
+import { CurrentUserInterface } from 'src/shared/generics';
 
 @Resolver(() => Category)
 export class CategoriesResolver {
@@ -33,7 +34,10 @@ export class CategoriesResolver {
   @Roles(USER_TYPE.ADMIN)
   @UseGuards(JwtAccessAuthGuard, RoleGuard)
   @Query(returningReport, { name: 'getReport' })
-  getReport(@Args('reportInput') reportInput: ReportInput) {
-    return this.categoriesService.getReport(reportInput);
+  getReport(
+    @Args('reportInput') reportInput: ReportInput,
+    @CurrentUser() userReq: CurrentUserInterface,
+  ) {
+    return this.categoriesService.getReport(reportInput, userReq.location);
   }
 }

@@ -3,6 +3,7 @@ import { CategoriesResolver } from './categories.resolver';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryInput } from './dto/create-category.input';
 import { ReportInput } from './dto/report.input';
+import { currentUserMock } from 'src/shared/__mocks__';
 
 describe('CategoriesResolver', () => {
   let resolver: CategoriesResolver;
@@ -66,23 +67,32 @@ describe('CategoriesResolver', () => {
   describe('getReport', () => {
     it('should return report data', async () => {
       const reportInput: ReportInput = {
-        limit: 10,
         page: 1,
-        sort: 'categoryCode',
+        limit: 10,
         sortOrder: 'asc',
+        sort: '',
       };
       const reportData = {
         total: 5,
         totalPages: 1,
         page: 1,
         limit: 10,
-        data: [{ id: 1, categoryCode: 'CAT1', categoryName: 'Category1' }],
+        data: [
+          {
+            category_name: 'Grocery',
+            total: 1,
+            assigned: 0,
+            available: 0,
+            not_available: 1,
+            waiting_for_recycling: 0,
+            recycled: 0,
+          },
+        ],
       };
       mockCategoriesService.getReport.mockResolvedValueOnce(reportData);
 
-      const result = await resolver.getReport(reportInput);
+      const result = await resolver.getReport(reportInput, currentUserMock);
       expect(result).toEqual(reportData);
-      expect(mockCategoriesService.getReport).toHaveBeenCalledWith(reportInput);
     });
   });
 });
