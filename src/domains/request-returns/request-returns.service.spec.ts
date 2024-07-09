@@ -5,6 +5,7 @@ import { MyBadRequestException } from 'src/shared/exceptions';
 import { CreateRequestReturnInput } from './dto/create-request-return.input';
 import { FindRequestReturnsInput } from './dto/find-request-returns.input';
 import { ASSET_STATE, LOCATION, REQUEST_RETURN_STATE } from '@prisma/client';
+import { userDataPrismaMock } from 'src/shared/__mocks__';
 
 describe('RequestReturnsService', () => {
   let service: RequestReturnsService;
@@ -256,7 +257,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -273,7 +274,7 @@ describe('RequestReturnsService', () => {
 
       const result = await service.createRequestReturn(
         createRequestReturnInput,
-        location,
+        userDataPrismaMock,
       );
       expect(result).toEqual(requestReturn);
     });
@@ -285,7 +286,6 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
       const checkExist = { id: 1, assignmentId: 1 };
 
       mockPrismaService.requestReturn.findFirst.mockResolvedValueOnce(
@@ -293,7 +293,10 @@ describe('RequestReturnsService', () => {
       );
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -304,12 +307,14 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
 
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(null);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -320,7 +325,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HN,
@@ -331,7 +336,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -342,7 +350,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -353,7 +361,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
 
@@ -364,7 +375,7 @@ describe('RequestReturnsService', () => {
         requestedById: 1,
         assignedDate: new Date().toISOString(),
       };
-      const location = 'HCM';
+
       const assignment = {
         id: 1,
         location: LOCATION.HCM,
@@ -375,7 +386,10 @@ describe('RequestReturnsService', () => {
       mockPrismaService.assignment.findUnique.mockResolvedValueOnce(assignment);
 
       await expect(
-        service.createRequestReturn(createRequestReturnInput, location),
+        service.createRequestReturn(
+          createRequestReturnInput,
+          userDataPrismaMock,
+        ),
       ).rejects.toThrow(MyBadRequestException);
     });
   });

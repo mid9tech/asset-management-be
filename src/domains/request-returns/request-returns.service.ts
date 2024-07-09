@@ -104,10 +104,9 @@ export class RequestReturnsService {
 
   async createRequestReturn(
     createRequestReturnInput: CreateRequestReturnInput,
-    location: string,
+    userReq: any,
   ) {
-    const { assetId, assignmentId, requestedById, assignedDate } =
-      createRequestReturnInput;
+    const { assetId, assignmentId, assignedDate } = createRequestReturnInput;
 
     const assignment = await this.prismaService.assignment.findUnique({
       where: { id: assignmentId },
@@ -124,7 +123,7 @@ export class RequestReturnsService {
     if (!assignment) {
       throw new MyBadRequestException('Assignment not found');
     }
-    if (assignment.location !== LOCATION[location]) {
+    if (assignment.location !== LOCATION[userReq.location]) {
       throw new MyBadRequestException('Assignment not in this location');
     }
     if (assignment.state !== 'ACCEPTED') {
@@ -138,7 +137,7 @@ export class RequestReturnsService {
       data: {
         assetId,
         assignmentId,
-        requestedById,
+        requestedById: userReq.id,
         assignedDate: new Date(assignedDate),
         state: REQUEST_RETURN_STATE.WAITING_FOR_RETURNING,
       },
