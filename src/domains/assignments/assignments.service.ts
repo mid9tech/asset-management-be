@@ -235,12 +235,23 @@ export class AssignmentsService {
         });
       }
 
-      await this.prismaService.asset.update({
-        where: { id: assignment.assetId },
-        data: {
-          isReadyAssigned: true,
-        },
-      });
+      const countAssetAlreadyAssigned =
+        await this.prismaService.assignment.count({
+          where: {
+            assetId: assignment.assetId,
+            state: ASSIGNMENT_STATE.ACCEPTED,
+            isRemoved: false,
+          },
+        });
+
+      if (countAssetAlreadyAssigned === 0) {
+        await this.prismaService.asset.update({
+          where: { id: assignment.assetId },
+          data: {
+            isReadyAssigned: true,
+          },
+        });
+      }
 
       return true;
     });

@@ -14,7 +14,7 @@ SELECT
 FROM
   "Category" c
 LEFT JOIN
-  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'HCM'
+  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'HCM' AND a."isRemoved" = false
 GROUP BY
   c."categoryName";
 
@@ -34,7 +34,7 @@ SELECT
 FROM
   "Category" c
 LEFT JOIN
-  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'HN'
+  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'HN' AND a."isRemoved" = false
 GROUP BY
   c."categoryName";
 
@@ -54,6 +54,6 @@ SELECT
 FROM
   "Category" c
 LEFT JOIN
-  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'DN'
+  "Asset" a ON a."categoryId" = c."id" AND a."location" = 'DN' AND a."isRemoved" = false
 GROUP BY
   c."categoryName";
