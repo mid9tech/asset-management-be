@@ -32,6 +32,11 @@ export class AuthController {
     return 'Hello World!';
   }
 
+  @Get('/test-not-auth')
+  public autoSuccess() {
+    return 'Hello World!';
+  }
+
   @Post('/login')
   public async login(
     @Res() res: Response,

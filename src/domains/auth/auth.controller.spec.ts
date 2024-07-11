@@ -174,4 +174,11 @@ describe('AuthController', () => {
       expect(res.json).toHaveBeenCalledWith(authResult);
     });
   });
+
+  describe('test', () => {
+    it('test', async () => {
+      const expected = await controller.autoSuccess();
+      expect(expected).toEqual('Hello World!');
+    });
+  });
 });
